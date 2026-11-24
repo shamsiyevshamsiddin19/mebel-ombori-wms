@@ -156,6 +156,7 @@ class OffcutCreateView(ApprovedUserRequiredMixin, FormView):
             for m in form.fields["material"].queryset
             if hasattr(m, "whole_stock") and m.whole_stock.length_mm
         }
+        context["recent_offcuts"] = selectors.visible_offcuts(self.request.user).order_by("-created_at")[:10]
         return context
 
     def form_valid(self, form):
