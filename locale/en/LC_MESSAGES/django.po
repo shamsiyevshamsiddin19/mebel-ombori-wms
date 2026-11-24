@@ -32,7 +32,7 @@ msgstr "For liquids, choose litres, kg or pieces."
 msgid "Yangi kategoriya nomini yozing."
 msgstr "Enter the new category name."
 
-#: apps/inventory/forms.py:173 apps/inventory/forms.py:254 apps/inventory/forms.py:301 apps/inventory/views.py:448
+#: apps/inventory/forms.py:173 apps/inventory/forms.py:254 apps/inventory/forms.py:301 apps/inventory/views.py:452
 #: templates/inventory/home.html:52 templates/inventory/material_list.html:30 templates/inventory/my_history.html:11
 msgid "Material"
 msgstr "Material"
@@ -49,7 +49,7 @@ msgstr "Number of containers"
 msgid "Masalan, 5 chelak. Miqdor idish hajmiga ko'paytirib hisoblanadi."
 msgstr "For example, 5 buckets. The quantity is multiplied by the container size."
 
-#: apps/inventory/forms.py:184 apps/inventory/models.py:217 apps/inventory/views.py:450 templates/inventory/kirim_form.html:50
+#: apps/inventory/forms.py:184 apps/inventory/models.py:218 apps/inventory/views.py:454 templates/inventory/kirim_form.html:50
 #: templates/inventory/my_history.html:11 templates/inventory/reports.html:92
 msgid "Miqdor"
 msgstr "Quantity"
@@ -70,8 +70,8 @@ msgstr "Wholesale price"
 msgid "Narx (USD $)"
 msgstr "Price (USD $)"
 
-#: apps/inventory/forms.py:195 apps/inventory/forms.py:235 apps/inventory/forms.py:276 apps/inventory/models.py:269
-#: apps/inventory/views.py:456
+#: apps/inventory/forms.py:195 apps/inventory/forms.py:235 apps/inventory/forms.py:276 apps/inventory/models.py:270
+#: apps/inventory/views.py:460
 msgid "Izoh"
 msgstr "Note"
 
@@ -99,11 +99,11 @@ msgstr "How much did you take?"
 msgid "Buyurtma yoki mijoz nomi"
 msgstr "Order or customer name"
 
-#: apps/inventory/forms.py:256 apps/inventory/models.py:223 apps/inventory/models.py:266
+#: apps/inventory/forms.py:256 apps/inventory/models.py:224 apps/inventory/models.py:267
 msgid "Uzunligi (mm)"
 msgstr "Length (mm)"
 
-#: apps/inventory/forms.py:257 apps/inventory/models.py:224 apps/inventory/models.py:267
+#: apps/inventory/forms.py:257 apps/inventory/models.py:225 apps/inventory/models.py:268
 msgid "Eni (mm)"
 msgstr "Width (mm)"
 
@@ -131,7 +131,7 @@ msgstr "Month"
 msgid "Harakat turi"
 msgstr "Movement type"
 
-#: apps/inventory/forms.py:297 apps/inventory/views.py:455 templates/users/pending_users.html:10 templates/users/user_list.html:23
+#: apps/inventory/forms.py:297 apps/inventory/views.py:459 templates/users/pending_users.html:10 templates/users/user_list.html:23
 msgid "Ishchi"
 msgstr "Worker"
 
@@ -151,7 +151,7 @@ msgstr "Select"
 msgid "Oyni YYYY-MM ko'rinishida kiriting."
 msgstr "Enter the month as YYYY-MM."
 
-#: apps/inventory/forms.py:46 apps/inventory/forms.py:294 apps/inventory/models.py:133 apps/inventory/views.py:449
+#: apps/inventory/forms.py:46 apps/inventory/forms.py:294 apps/inventory/models.py:134 apps/inventory/views.py:453
 #: templates/inventory/material_list.html:20
 msgid "Kategoriya"
 msgstr "Category"
@@ -188,7 +188,7 @@ msgstr "Sheet width (mm)"
 msgid "Masalan 1830."
 msgstr "For example, 1830."
 
-#: apps/inventory/forms.py:68 apps/inventory/models.py:154
+#: apps/inventory/forms.py:68 apps/inventory/models.py:155
 msgid "Minimal qoldiq"
 msgstr "Minimum stock"
 
@@ -196,7 +196,7 @@ msgstr "Minimum stock"
 msgid "Miqdor shundan kam bo'lsa, xarid ro'yxatida ko'rinadi."
 msgstr "If the quantity falls below this, the material appears on the purchase list."
 
-#: apps/inventory/forms.py:73 apps/inventory/models.py:143
+#: apps/inventory/forms.py:73 apps/inventory/models.py:144
 msgid "Idish hajmi"
 msgstr "Container size"
 
@@ -208,259 +208,263 @@ msgstr "For example, 12 for a 12-litre bucket. Lets you enter stock in by the nu
 msgid "O'chirilsa, ishchilar materialni ko'rmaydi; tarix saqlanadi."
 msgstr "If turned off, workers no longer see the material; its history is kept."
 
-#: apps/inventory/models.py:119
+#: apps/inventory/models.py:120
 #, python-format
 msgid "Noma'lum kategoriya: %(code)s"
 msgstr "Unknown category: %(code)s"
 
-#: apps/inventory/models.py:124
+#: apps/inventory/models.py:125
 msgid "Ruxsat etilgan kasblar ro'yxat (list) bo'lishi kerak."
 msgstr "Allowed trades must be a list."
 
-#: apps/inventory/models.py:128
+#: apps/inventory/models.py:129
 #, python-format
 msgid "Noma'lum kasb(lar): %(roles)s"
 msgstr "Unknown trade(s): %(roles)s"
 
-#: apps/inventory/models.py:135
+#: apps/inventory/models.py:136
 msgid "Ruxsat etilgan kasblar"
 msgstr "Allowed trades"
 
-#: apps/inventory/models.py:141
+#: apps/inventory/models.py:142
 msgid "O'lchov birligi"
 msgstr "Unit of measure"
 
-#: apps/inventory/models.py:163 apps/inventory/views.py:452
+#: apps/inventory/models.py:164 apps/inventory/views.py:456
 msgid "Birlik narxi (USD)"
 msgstr "Unit price (USD)"
 
-#: apps/inventory/models.py:171 templates/users/user_list.html:35
+#: apps/inventory/models.py:172 templates/users/user_list.html:58
 msgid "Faol"
 msgstr "Active"
 
-#: apps/inventory/models.py:179
+#: apps/inventory/models.py:180
 msgid "material"
 msgstr "material"
 
-#: apps/inventory/models.py:180
+#: apps/inventory/models.py:181
 msgid "materiallar"
 msgstr "materials"
 
-#: apps/inventory/models.py:22
+#: apps/inventory/models.py:23
 msgctxt "category"
 msgid "List materiallar"
 msgstr "Sheet materials"
 
-#: apps/inventory/models.py:229
+#: apps/inventory/models.py:230
 msgid "butun material"
 msgstr "whole material"
 
-#: apps/inventory/models.py:23
-msgctxt "category"
-msgid "Bo'yoq va suyuqliklar"
-msgstr "Paints and liquids"
-
-#: apps/inventory/models.py:230
+#: apps/inventory/models.py:231
 msgid "butun materiallar"
 msgstr "whole materials"
 
 #: apps/inventory/models.py:24
 msgctxt "category"
+msgid "Bo'yoq va suyuqliklar"
+msgstr "Paints and liquids"
+
+#: apps/inventory/models.py:25
+msgctxt "category"
 msgid "Lenta va rulonlar"
 msgstr "Tapes and rolls"
 
-#: apps/inventory/models.py:25
+#: apps/inventory/models.py:26
 msgctxt "category"
 msgid "Furnitura"
 msgstr "Hardware"
 
-#: apps/inventory/models.py:268 templates/inventory/home.html:100 templates/inventory/offcut_form.html:64
+#: apps/inventory/models.py:269 templates/inventory/home.html:102 templates/inventory/offcut_form.html:64
 msgid "Soni"
 msgstr "Quantity"
 
-#: apps/inventory/models.py:277
+#: apps/inventory/models.py:278
 msgid "qoldiq material"
 msgstr "offcut"
 
-#: apps/inventory/models.py:278
+#: apps/inventory/models.py:279
 msgid "qoldiq materiallar"
 msgstr "offcuts"
 
-#: apps/inventory/models.py:29
+#: apps/inventory/models.py:30
 msgctxt "unit"
 msgid "Dona"
 msgstr "Piece"
 
-#: apps/inventory/models.py:30
+#: apps/inventory/models.py:31
 msgctxt "unit"
 msgid "Litr"
 msgstr "Litre"
 
-#: apps/inventory/models.py:31
-msgctxt "unit"
-msgid "Kilogramm"
-msgstr "Kilogram"
-
-#: apps/inventory/models.py:318 templates/inventory/_txn_rows.html:6 templates/inventory/_txn_rows.html:13 templates/inventory/dashboard.html:59
+#: apps/inventory/models.py:319 templates/inventory/_txn_rows.html:6 templates/inventory/_txn_rows.html:13 templates/inventory/dashboard.html:59
 #: templates/inventory/dashboard.html:86 templates/inventory/dashboard.html:107 templates/inventory/dashboard.html:125 templates/inventory/kirim_form.html:3
 #: templates/inventory/kirim_form.html:8 templates/inventory/reports.html:28 templates/partials/bottom_nav.html:5 templates/partials/nav.html:10
 msgid "Kirim"
 msgstr "Stock in"
 
-#: apps/inventory/models.py:319 templates/inventory/_txn_rows.html:7 templates/inventory/_txn_rows.html:13 templates/inventory/dashboard.html:59
+#: apps/inventory/models.py:32
+msgctxt "unit"
+msgid "Kilogramm"
+msgstr "Kilogram"
+
+#: apps/inventory/models.py:320 templates/inventory/_txn_rows.html:7 templates/inventory/_txn_rows.html:13 templates/inventory/dashboard.html:59
 #: templates/inventory/dashboard.html:107 templates/inventory/dashboard.html:125
 msgid "Chiqim"
 msgstr "Stock out"
 
-#: apps/inventory/models.py:32
-msgctxt "unit"
-msgid "Metr"
-msgstr "Metre"
-
-#: apps/inventory/models.py:320 templates/inventory/_txn_rows.html:8 templates/inventory/_txn_rows.html:13 templates/inventory/reports.html:43
+#: apps/inventory/models.py:321 templates/inventory/_txn_rows.html:8 templates/inventory/_txn_rows.html:13 templates/inventory/reports.html:43
 msgid "Qoldiq qo'shildi"
 msgstr "Offcut added"
 
 #: apps/inventory/models.py:33
 msgctxt "unit"
+msgid "Metr"
+msgstr "Metre"
+
+#: apps/inventory/models.py:34
+msgctxt "unit"
 msgid "Santimetr"
 msgstr "Centimetre"
 
-#: apps/inventory/models.py:38
+#: apps/inventory/models.py:389
+msgid "ombor harakati"
+msgstr "stock movement"
+
+#: apps/inventory/models.py:39
 msgctxt "unit short"
 msgid "L"
 msgstr "L"
 
-#: apps/inventory/models.py:388
-msgid "ombor harakati"
-msgstr "stock movement"
-
-#: apps/inventory/models.py:389
+#: apps/inventory/models.py:390
 msgid "ombor harakatlari"
 msgstr "stock movements"
 
-#: apps/inventory/models.py:39
+#: apps/inventory/models.py:40
 msgctxt "unit short"
 msgid "kg"
 msgstr "kg"
 
-#: apps/inventory/models.py:40
+#: apps/inventory/models.py:41
 msgctxt "unit short"
 msgid "m"
 msgstr "m"
 
-#: apps/inventory/models.py:41
+#: apps/inventory/models.py:42
 msgctxt "unit short"
 msgid "sm"
 msgstr "cm"
 
-#: apps/inventory/models.py:42
+#: apps/inventory/models.py:43
 msgctxt "unit short"
 msgid "dona"
 msgstr "pcs"
 
-#: apps/inventory/models.py:73 apps/users/models.py:25
+#: apps/inventory/models.py:74 apps/users/models.py:28
 msgid "Kod"
 msgstr "Code"
 
-#: apps/inventory/models.py:74 apps/inventory/models.py:132 apps/users/models.py:26
+#: apps/inventory/models.py:75 apps/inventory/models.py:133 apps/users/models.py:29
 msgid "Nomi"
 msgstr "Name"
 
-#: apps/inventory/models.py:75 apps/users/models.py:27
+#: apps/inventory/models.py:76 apps/users/models.py:30
 msgid "Tartib"
 msgstr "Order"
 
-#: apps/inventory/models.py:80
+#: apps/inventory/models.py:81
 msgid "kategoriya"
 msgstr "category"
 
-#: apps/inventory/models.py:81
+#: apps/inventory/models.py:82
 msgid "kategoriyalar"
 msgstr "categories"
 
-#: apps/inventory/services.py:131
+#: apps/inventory/services.py:100 apps/users/permissions.py:59
+msgid "Administrator ombordan material olmaydi — buni ishchi bajaradi."
+msgstr "Administrators do not withdraw material — workers take it."
+
+#: apps/inventory/services.py:163
 msgid "Birlik narxi yoki umumiy partiya narxidan bittasini kiriting."
 msgstr "Enter either the unit price or the total batch price."
 
-#: apps/inventory/services.py:135 apps/inventory/services.py:140
+#: apps/inventory/services.py:167 apps/inventory/services.py:172
 msgid "Narx manfiy bo'lishi mumkin emas."
 msgstr "The price can't be negative."
 
-#: apps/inventory/services.py:149
+#: apps/inventory/services.py:181
 msgid "Arxivlangan materialga kirim qilib bo'lmaydi. Avval uni faollashtiring."
 msgstr "You can't record stock in for an archived material. Make it active first."
 
-#: apps/inventory/services.py:190
+#: apps/inventory/services.py:223
 msgid "Bu material arxivlangan."
 msgstr "This material is archived."
 
-#: apps/inventory/services.py:193
+#: apps/inventory/services.py:226
 #, python-format
 msgid "Omborda faqat %(amount)s %(unit)s bor."
 msgstr "Only %(amount)s %(unit)s in stock."
 
-#: apps/inventory/services.py:219
+#: apps/inventory/services.py:253
 msgid "Butun son kiriting."
 msgstr "Enter a whole number."
 
-#: apps/inventory/services.py:221
+#: apps/inventory/services.py:255
 msgid "Kamida 1 dona (butun son) kiriting."
 msgstr "Enter at least 1 piece (a whole number)."
 
-#: apps/inventory/services.py:226
+#: apps/inventory/services.py:260
 msgid "Bu qoldiq allaqachon olingan."
 msgstr "This offcut has already been taken."
 
-#: apps/inventory/services.py:229
+#: apps/inventory/services.py:263
 #, python-format
 msgid "Bu qoldiqdan faqat %(count)s dona bor."
 msgstr "Only %(count)s pcs of this offcut left."
 
-#: apps/inventory/services.py:269
+#: apps/inventory/services.py:303
 msgid "Bu turdagi material uchun qoldiq qayd etilmaydi."
 msgstr "Offcuts aren't recorded for this kind of material."
 
-#: apps/inventory/services.py:274
+#: apps/inventory/services.py:308
 msgid "Musbat butun son kiriting."
 msgstr "Enter a positive whole number."
 
-#: apps/inventory/services.py:284
+#: apps/inventory/services.py:318
 #, python-format
 msgid "Qoldiq o'lchami to'liq listdan (%(length)sx%(width)s mm) katta bo'lishi mumkin emas."
 msgstr "An offcut can't be larger than the full sheet (%(length)sx%(width)s mm)."
 
-#: apps/inventory/services.py:43 apps/inventory/services.py:41
+#: apps/inventory/services.py:46 apps/inventory/services.py:44
 msgid "Noto'g'ri raqam."
 msgstr "Invalid number."
 
-#: apps/inventory/services.py:50
+#: apps/inventory/services.py:53
 msgid "Miqdor 0 dan katta bo'lishi kerak."
 msgstr "The quantity must be greater than 0."
 
-#: apps/inventory/services.py:52
+#: apps/inventory/services.py:55
 msgid "Miqdor ko'pi bilan 2 xonali kasr bo'lishi mumkin."
 msgstr "The quantity can have at most 2 decimal places."
 
-#: apps/inventory/services.py:55
+#: apps/inventory/services.py:58
 #, python-format
 msgid "%(name)s faqat butun sonda hisoblanadi (%(unit)s)."
 msgstr "“%(name)s” is counted in whole numbers only (%(unit)s)."
 
-#: apps/inventory/services.py:63 apps/users/permissions.py:40
+#: apps/inventory/services.py:71 apps/users/permissions.py:52
 msgid "Bu amal faqat administratorlar uchun."
 msgstr "Only administrators can do this."
 
-#: apps/inventory/services.py:68
+#: apps/inventory/services.py:84
 msgid "Bu material sizning kasbingiz uchun ruxsat etilmagan."
 msgstr "This material isn't available to your trade."
 
-#: apps/inventory/templatetags/wms.py:189
+#: apps/inventory/templatetags/wms.py:191
 #, python-format
 msgid "%(length)s × %(width)s mm qoldiq, list %(sheet_length)s × %(sheet_width)s mm"
 msgstr "Offcut %(length)s × %(width)s mm, sheet %(sheet_length)s × %(sheet_width)s mm"
 
-#: apps/inventory/templatetags/wms.py:191
+#: apps/inventory/templatetags/wms.py:193
 #, python-format
 msgid "%(length)s × %(width)s mm qoldiq"
 msgstr "Offcut %(length)s × %(width)s mm"
@@ -525,53 +529,53 @@ msgctxt "month"
 msgid "oktabr"
 msgstr "October"
 
-#: apps/inventory/views.py:121
+#: apps/inventory/views.py:125
 #, python-format
 msgid "Chiqim yozildi: %(name)s — %(amount)s %(unit)s. Omborda qoldi: %(left)s %(unit)s."
 msgstr "Stock out recorded: %(name)s — %(amount)s %(unit)s. Left in stock: %(left)s %(unit)s."
 
-#: apps/inventory/views.py:173
+#: apps/inventory/views.py:177
 #, python-format
 msgid "Qoldiq qo'shildi: %(name)s %(length)s×%(width)s mm — %(count)s dona."
 msgstr "Offcut added: %(name)s %(length)s×%(width)s mm — %(count)s pcs."
 
-#: apps/inventory/views.py:211
+#: apps/inventory/views.py:215
 #, python-format
 msgid "Qoldiq olindi: %(name)s %(length)s×%(width)s mm — %(count)s dona."
 msgstr "Offcut taken: %(name)s %(length)s×%(width)s mm — %(count)s pcs."
 
-#: apps/inventory/views.py:320
+#: apps/inventory/views.py:324
 #, python-format
 msgid "“%(name)s” qo'shildi. Endi kirimni kiriting."
 msgstr "“%(name)s” added. Now record the stock in."
 
-#: apps/inventory/views.py:338
+#: apps/inventory/views.py:342
 #, python-format
 msgid "“%(name)s” saqlandi."
 msgstr "“%(name)s” saved."
 
-#: apps/inventory/views.py:381
+#: apps/inventory/views.py:385
 #, python-format
 msgid "Kirim yozildi: %(name)s +%(amount)s %(unit)s, %(total)s. Yangi o'rtacha narx: %(price)s."
 msgstr "Stock in recorded: %(name)s +%(amount)s %(unit)s, %(total)s. New average price: %(price)s."
 
-#: apps/inventory/views.py:446
+#: apps/inventory/views.py:450
 msgid "Sana"
 msgstr "Date"
 
-#: apps/inventory/views.py:447 templates/inventory/my_history.html:11 templates/inventory/reports.html:92
+#: apps/inventory/views.py:451 templates/inventory/my_history.html:11 templates/inventory/reports.html:92
 msgid "Turi"
 msgstr "Type"
 
-#: apps/inventory/views.py:451
+#: apps/inventory/views.py:455
 msgid "Birlik"
 msgstr "Unit"
 
-#: apps/inventory/views.py:453
+#: apps/inventory/views.py:457
 msgid "Jami (USD)"
 msgstr "Total (USD)"
 
-#: apps/inventory/views.py:454
+#: apps/inventory/views.py:458
 msgid "Qoldiq o'lchami (mm)"
 msgstr "Offcut size (mm)"
 
@@ -579,11 +583,11 @@ msgstr "Offcut size (mm)"
 msgid "Ombor (WMS)"
 msgstr "Warehouse (WMS)"
 
-#: apps/users/api.py:49
-msgid "Bu login band. Boshqasini tanlang."
-msgstr "This username is taken. Choose another."
+#: apps/users/api.py:53 apps/users/forms.py:142 apps/users/services.py:21
+msgid "Bu raqam allaqachon ro'yxatdan o'tgan."
+msgstr "This phone number is already registered."
 
-#: apps/users/api.py:81
+#: apps/users/api.py:85
 msgid "Ro'yxatdan o'tdingiz. Administrator tasdiqlagach tizimga kira olasiz."
 msgstr "You're registered. You can log in once an administrator approves you."
 
@@ -591,196 +595,216 @@ msgstr "You're registered. You can log in once an administrator approves you."
 msgid "Foydalanuvchilar"
 msgstr "Users"
 
-#: apps/users/forms.py:117
-msgid "Yangi parol"
-msgstr "New password"
-
-#: apps/users/forms.py:121
-msgid "Ishchi parolini unutgan bo'lsa, shu yerda yangisini o'rnating."
-msgstr "If a worker forgot their password, set a new one here."
-
-#: apps/users/forms.py:127
-msgid "Faol hisob"
-msgstr "Active account"
-
-#: apps/users/forms.py:127
-msgid "Tasdiqlangan"
-msgstr "Approved"
-
-#: apps/users/forms.py:130
-msgid "Tasdiqlangan ishchi tizimga kira oladi."
-msgstr "An approved worker can log in."
-
-#: apps/users/forms.py:131
-msgid "O'chirilsa, foydalanuvchi tizimga kira olmaydi; tarixi saqlanadi."
-msgstr "If turned off, the user can't log in; their history is kept."
-
-#: apps/users/forms.py:148
-msgid "O'zingizdan administrator rolini olib tashlay olmaysiz."
-msgstr "You can't remove the administrator role from yourself."
-
-#: apps/users/forms.py:150
-msgid "O'z hisobingizni o'chira yoki tasdiqdan chiqara olmaysiz."
-msgstr "You can't deactivate or unapprove your own account."
-
-#: apps/users/forms.py:152
-msgid "Tasdiqlangan foydalanuvchida kamida bitta rol bo'lishi kerak."
-msgstr "An approved user must have at least one role."
-
-#: apps/users/forms.py:171
-msgid "Kasb nomi"
-msgstr "Trade name"
-
-#: apps/users/forms.py:172
-msgid "Masalan: Pardozchi. Ishchilar ro'yxatdan o'tishda shu nomni ko'radi."
-msgstr "For example: Finisher. Workers see this name when they register."
-
-#: apps/users/forms.py:180
-msgid "Bunday kasb allaqachon bor."
-msgstr "This trade already exists."
-
-#: apps/users/forms.py:23
-msgid "Login yoki parol noto'g'ri."
-msgstr "Wrong username or password."
-
-#: apps/users/forms.py:24
-msgid "Bu hisob o'chirilgan. Administratorga murojaat qiling."
-msgstr "This account is disabled. Contact an administrator."
-
-#: apps/users/forms.py:25
-msgid "Hisobingiz hali tasdiqlanmagan. Administrator so'rovingizni ko'rib chiqqach, tizimga kira olasiz."
-msgstr "Your account isn't approved yet. You can log in once an administrator reviews your request."
-
-#: apps/users/forms.py:33 apps/users/forms.py:73
-msgid "Login"
-msgstr "Username"
-
-#: apps/users/forms.py:37 apps/users/forms.py:76
-msgid "Parol"
-msgstr "Password"
-
-#: apps/users/forms.py:58
+#: apps/users/forms.py:116
 msgid "To'liq ism (F.I.Sh.)"
 msgstr "Full name"
 
-#: apps/users/forms.py:60
+#: apps/users/forms.py:117
+msgid "Tizimga shu raqam bilan kirasiz."
+msgstr "You will use this number to log in."
+
+#: apps/users/forms.py:119
 msgid "Kasbingiz"
 msgstr "Your trade"
 
-#: apps/users/forms.py:63
+#: apps/users/forms.py:122
 msgid "Bir nechta kasbni tanlashingiz mumkin."
 msgstr "You can choose more than one trade."
 
-#: apps/users/forms.py:64 apps/users/services.py:14
+#: apps/users/forms.py:123 apps/users/services.py:18
 msgid "Kamida bitta kasbni tanlang."
 msgstr "Choose at least one trade."
 
-#: apps/users/forms.py:74
-msgid "Faqat lotin harflari, raqamlar va @/./+/-/_ belgilar."
-msgstr "Latin letters, digits and @/./+/-/_ only."
-
-#: apps/users/forms.py:77
+#: apps/users/forms.py:135
 msgid "Kamida 8 ta belgi; faqat raqamlardan iborat bo'lmasin."
 msgstr "At least 8 characters, and not only digits."
 
-#: apps/users/forms.py:78
+#: apps/users/forms.py:136
 msgid "Parolni takrorlang"
 msgstr "Repeat the password"
 
-#: apps/users/forms.py:96 apps/users/forms.py:111
+#: apps/users/forms.py:162 apps/users/forms.py:178
 msgid "Rollar"
 msgstr "Roles"
 
-#: apps/users/forms.py:99
+#: apps/users/forms.py:165
 msgid "Kamida bitta rol belgilang."
 msgstr "Select at least one role."
 
-#: apps/users/models.py:10
+#: apps/users/forms.py:176
+msgid "Ishchi shu raqam bilan tizimga kiradi."
+msgstr "Worker will log in with this number."
+
+#: apps/users/forms.py:184
+msgid "Yangi parol"
+msgstr "New password"
+
+#: apps/users/forms.py:188
+msgid "Ishchi parolini unutgan bo'lsa, shu yerda yangisini o'rnating."
+msgstr "If a worker forgot their password, set a new one here."
+
+#: apps/users/forms.py:194
+msgid "Faol hisob"
+msgstr "Active account"
+
+#: apps/users/forms.py:194
+msgid "Tasdiqlangan"
+msgstr "Approved"
+
+#: apps/users/forms.py:197
+msgid "Tasdiqlangan ishchi tizimga kira oladi."
+msgstr "An approved worker can log in."
+
+#: apps/users/forms.py:198
+msgid "O'chirilsa, foydalanuvchi tizimga kira olmaydi; tarixi saqlanadi."
+msgstr "If turned off, the user can't log in; their history is kept."
+
+#: apps/users/forms.py:214
+msgid "Bu raqam boshqa hisobga biriktirilgan."
+msgstr "This number is already linked to another account."
+
+#: apps/users/forms.py:221
+msgid "O'zingizdan administrator rolini olib tashlay olmaysiz."
+msgstr "You can't remove the administrator role from yourself."
+
+#: apps/users/forms.py:223
+msgid "O'z hisobingizni o'chira yoki tasdiqdan chiqara olmaysiz."
+msgstr "You can't deactivate or unapprove your own account."
+
+#: apps/users/forms.py:225
+msgid "Tasdiqlangan foydalanuvchida kamida bitta rol bo'lishi kerak."
+msgstr "An approved user must have at least one role."
+
+#: apps/users/forms.py:247
+msgid "Kasb nomi"
+msgstr "Trade name"
+
+#: apps/users/forms.py:248
+msgid "Masalan: Pardozchi. Ishchilar ro'yxatdan o'tishda shu nomni ko'radi."
+msgstr "For example: Finisher. Workers see this name when they register."
+
+#: apps/users/forms.py:256
+msgid "Bunday kasb allaqachon bor."
+msgstr "This trade already exists."
+
+#: apps/users/forms.py:56
+msgid "Login yoki parol noto'g'ri."
+msgstr "Wrong username or password."
+
+#: apps/users/forms.py:57
+msgid "Bu hisob o'chirilgan. Administratorga murojaat qiling."
+msgstr "This account is disabled. Contact an administrator."
+
+#: apps/users/forms.py:58
+msgid "Hisobingiz hali tasdiqlanmagan. Administrator so'rovingizni ko'rib chiqqach, tizimga kira olasiz."
+msgstr "Your account isn't approved yet. You can log in once an administrator reviews your request."
+
+#: apps/users/forms.py:64
+msgid "Telefon raqami yoki parol noto'g'ri."
+msgstr "Invalid phone number or password."
+
+#: apps/users/forms.py:69 apps/users/forms.py:35 apps/users/models.py:151 templates/users/user_edit.html:14
+msgid "Telefon raqami"
+msgstr "Phone number"
+
+#: apps/users/forms.py:80 apps/users/forms.py:134 apps/users/models.py:163 templates/users/user_edit.html:18
+msgid "Parol"
+msgstr "Password"
+
+#: apps/users/models.py:115
+msgid "Telefon raqamini +998 90 123 45 67 ko'rinishida kiriting."
+msgstr "Enter phone number in format +998 90 123 45 67."
+
+#: apps/users/models.py:13
 msgid "Administrator"
 msgstr "Administrator"
 
-#: apps/users/models.py:108
-msgid "To'liq ism"
-msgstr "Full name"
-
-#: apps/users/models.py:11
+#: apps/users/models.py:14
 msgctxt "trade"
 msgid "Arrachi"
 msgstr "Sawyer"
 
-#: apps/users/models.py:12
+#: apps/users/models.py:149
+msgid "To'liq ism"
+msgstr "Full name"
+
+#: apps/users/models.py:15
 msgctxt "trade"
 msgid "Kraskachi"
 msgstr "Painter"
 
-#: apps/users/models.py:127
-msgid "foydalanuvchi"
-msgstr "user"
+#: apps/users/models.py:157
+msgid "Tizimga shu raqam bilan kiriladi."
+msgstr "Used to log in to the system."
 
-#: apps/users/models.py:128
-msgid "foydalanuvchilar"
-msgstr "users"
-
-#: apps/users/models.py:13
+#: apps/users/models.py:16
 msgctxt "trade"
 msgid "Shkurkachi"
 msgstr "Sander"
 
-#: apps/users/models.py:14
+#: apps/users/models.py:17
 msgctxt "trade"
 msgid "Roverchi"
 msgstr "CNC operator"
 
-#: apps/users/models.py:15
+#: apps/users/models.py:18
 msgctxt "trade"
 msgid "Sborkachi"
 msgstr "Assembler"
 
-#: apps/users/models.py:32
+#: apps/users/models.py:182
+msgid "foydalanuvchi"
+msgstr "user"
+
+#: apps/users/models.py:183
+msgid "foydalanuvchilar"
+msgstr "users"
+
+#: apps/users/models.py:35
 msgid "kasb"
 msgstr "trade"
 
-#: apps/users/models.py:33
+#: apps/users/models.py:36
 msgid "kasblar"
 msgstr "trades"
 
-#: apps/users/models.py:85
+#: apps/users/models.py:86
 msgid "Rollar ro'yxat (list) ko'rinishida bo'lishi kerak."
 msgstr "Roles must be a list."
 
-#: apps/users/models.py:89
+#: apps/users/models.py:90
 #, python-format
 msgid "Noma'lum rol(lar): %(roles)s"
 msgstr "Unknown role(s): %(roles)s"
 
-#: apps/users/permissions.py:33
+#: apps/users/permissions.py:45
 msgid "Hisobingiz administrator tomonidan tasdiqlanmagan."
 msgstr "Your account hasn't been approved by an administrator."
 
-#: apps/users/services.py:27
+#: apps/users/services.py:41
 msgid "Tasdiqlashdan oldin kamida bitta rol belgilang."
 msgstr "Select at least one role before approving."
 
-#: apps/users/services.py:40
+#: apps/users/services.py:54
 msgid "Faqat tasdiqlanmagan so'rovlarni rad etish mumkin."
 msgstr "Only unapproved requests can be rejected."
 
-#: apps/users/views.py:123
+#: apps/users/views.py:130
 #, python-format
 msgid "%(name)s ma'lumotlari saqlandi."
 msgstr "Details for %(name)s saved."
 
-#: apps/users/views.py:140
+#: apps/users/views.py:147
 #, python-format
 msgid "“%(name)s” kasbi qo'shildi. Endi ishchilar ro'yxatdan o'tishda uni tanlay oladi."
 msgstr "Trade “%(name)s” added. Workers can now choose it when they register."
 
-#: apps/users/views.py:68
+#: apps/users/views.py:70
 #, python-format
 msgid "%(name)s tasdiqlandi va tizimga kira oladi."
 msgstr "%(name)s is approved and can now log in."
 
-#: apps/users/views.py:84
+#: apps/users/views.py:86
 #, python-format
 msgid "%(name)s so'rovi rad etildi."
 msgstr "The request from %(name)s was rejected."
@@ -877,12 +901,12 @@ msgstr "Menu"
 msgid "Yopish"
 msgstr "Close"
 
-#: templates/inventory/_txn_rows.html:11 templates/inventory/home.html:59 templates/inventory/home.html:108 templates/inventory/material_list.html:37
+#: templates/inventory/_txn_rows.html:11 templates/inventory/home.html:59 templates/inventory/home.html:110 templates/inventory/material_list.html:37
 #: templates/inventory/offcut_form.html:6
 msgid "mm"
 msgstr "mm"
 
-#: templates/inventory/_txn_rows.html:17 templates/inventory/dashboard.html:109 templates/inventory/home.html:108 templates/inventory/home.html:111
+#: templates/inventory/_txn_rows.html:17 templates/inventory/dashboard.html:109 templates/inventory/home.html:110 templates/inventory/home.html:113
 #: templates/inventory/offcut_form.html:6 templates/inventory/withdraw_offcut.html:17
 msgid "dona"
 msgstr "pcs"
@@ -1004,34 +1028,18 @@ msgstr "%(amount)s %(unit)s short"
 msgid "Hozir hech narsa minimal qoldiqdan kam emas. Material kamayganda shu yerda ko'rinadi."
 msgstr "Nothing is below minimum stock right now. Materials that run low will show up here."
 
-#: templates/inventory/home.html:100
+#: templates/inventory/home.html:102
 msgid "Kim qo'shgan"
 msgstr "Added by"
 
-#: templates/inventory/home.html:100
+#: templates/inventory/home.html:102
 msgid "Material va o'lcham"
 msgstr "Material and size"
 
-#: templates/inventory/home.html:117
+#: templates/inventory/home.html:122
 #, python-format
 msgid "%(name)s %(length)s×%(width)s — oldim"
 msgstr "Take %(name)s %(length)s×%(width)s"
-
-#: templates/inventory/home.html:124
-msgid "Hozircha qoldiq yo'q."
-msgstr "No offcuts yet."
-
-#: templates/inventory/home.html:124
-msgid "Qidiruv bo'yicha qoldiq topilmadi."
-msgstr "No offcuts match your search."
-
-#: templates/inventory/home.html:125
-msgid "List kesgandan keyin ishlatsa bo'ladigan bo'lak qolsa, uni qo'shing — keyingi buyurtmada shu yerdan topasiz."
-msgstr "If a usable piece is left after cutting a sheet, add it — you'll find it here for the next order."
-
-#: templates/inventory/home.html:125 templates/inventory/offcut_form.html:3 templates/inventory/offcut_form.html:27 templates/partials/nav.html:3
-msgid "Qoldiq qo'shish"
-msgstr "Add offcut"
 
 #: templates/inventory/home.html:13
 #, python-format
@@ -1041,6 +1049,22 @@ msgstr "Materials for %(roles)s"
 #: templates/inventory/home.html:13
 msgid "Barcha materiallar"
 msgstr "All materials"
+
+#: templates/inventory/home.html:130
+msgid "Hozircha qoldiq yo'q."
+msgstr "No offcuts yet."
+
+#: templates/inventory/home.html:130
+msgid "Qidiruv bo'yicha qoldiq topilmadi."
+msgstr "No offcuts match your search."
+
+#: templates/inventory/home.html:131
+msgid "List kesgandan keyin ishlatsa bo'ladigan bo'lak qolsa, uni qo'shing — keyingi buyurtmada shu yerdan topasiz."
+msgstr "If a usable piece is left after cutting a sheet, add it — you'll find it here for the next order."
+
+#: templates/inventory/home.html:131 templates/inventory/offcut_form.html:3 templates/inventory/offcut_form.html:27 templates/partials/nav.html:3
+msgid "Qoldiq qo'shish"
+msgstr "Add offcut"
 
 #: templates/inventory/home.html:14
 msgctxt "count"
@@ -1096,44 +1120,48 @@ msgstr "containers"
 msgid "Kam qoldi"
 msgstr "Low stock"
 
-#: templates/inventory/home.html:74
+#: templates/inventory/home.html:74 templates/inventory/home.html:120
+msgid "Ishchi oladi"
+msgstr "Worker takes"
+
+#: templates/inventory/home.html:76
 #, python-format
 msgid "%(name)s — oldim"
 msgstr "Take %(name)s"
 
-#: templates/inventory/home.html:74 templates/inventory/home.html:117
+#: templates/inventory/home.html:76 templates/inventory/home.html:122
 msgid "Oldim"
 msgstr "Take"
 
-#: templates/inventory/home.html:76
+#: templates/inventory/home.html:78
 msgid "Tugagan"
 msgstr "Out of stock"
 
-#: templates/inventory/home.html:84
+#: templates/inventory/home.html:86
 msgid "Kasbingiz uchun hali material qo'shilmagan."
 msgstr "No materials have been added for your trade yet."
 
-#: templates/inventory/home.html:84 templates/inventory/material_list.html:49
+#: templates/inventory/home.html:86 templates/inventory/material_list.html:49
 msgid "Qidiruv bo'yicha material topilmadi."
 msgstr "No materials match your search."
 
-#: templates/inventory/home.html:85
+#: templates/inventory/home.html:87
 msgid "Administrator material qo'shgach, shu yerda ko'rinadi."
 msgstr "Materials appear here once an administrator adds them."
 
-#: templates/inventory/home.html:85
+#: templates/inventory/home.html:87
 msgid "Birinchi materialni qo'shing"
 msgstr "Add the first material"
 
-#: templates/inventory/home.html:85
+#: templates/inventory/home.html:87
 msgid "Filtrni tozalash"
 msgstr "Clear filter"
 
-#: templates/inventory/home.html:95
+#: templates/inventory/home.html:97
 msgid "Qoldiq materiallar"
 msgstr "Offcuts"
 
-#: templates/inventory/home.html:96
+#: templates/inventory/home.html:98
 msgid "Kesishdan qolgan, qayta ishlatsa bo'ladigan bo'laklar · rasm list o'lchamiga nisbatan"
 msgstr "Reusable pieces left over from cutting · drawn to scale against the sheet"
 
@@ -1229,11 +1257,11 @@ msgstr "Status"
 msgid "Material o'chirilmaydi — tarix saqlanib qolishi uchun arxivlanadi."
 msgstr "Materials aren't deleted — they're archived so the history is kept."
 
-#: templates/inventory/material_form.html:64 templates/users/user_edit.html:20 templates/users/worker_role_form.html:17
+#: templates/inventory/material_form.html:64 templates/users/user_edit.html:49 templates/users/worker_role_form.html:17
 msgid "Bekor qilish"
 msgstr "Cancel"
 
-#: templates/inventory/material_form.html:65 templates/users/user_edit.html:21
+#: templates/inventory/material_form.html:65 templates/users/user_edit.html:50
 msgid "Saqlash"
 msgstr "Save"
 
@@ -1278,7 +1306,7 @@ msgstr "Archived"
 msgid "%(name)s — tahrirlash"
 msgstr "Edit %(name)s"
 
-#: templates/inventory/material_list.html:41 templates/users/user_list.html:38
+#: templates/inventory/material_list.html:41 templates/users/user_list.html:61
 msgid "Tahrirlash"
 msgstr "Edit"
 
@@ -1565,7 +1593,7 @@ msgstr "Offcut +"
 msgid "Tarix"
 msgstr "History"
 
-#: templates/partials/field.html:15
+#: templates/partials/field.html:15 templates/partials/password_field.html:3
 msgid "(ixtiyoriy)"
 msgstr "(optional)"
 
@@ -1606,6 +1634,15 @@ msgstr "Previous"
 msgid "Keyingi"
 msgstr "Next"
 
+#: templates/partials/password_field.html:8 templates/partials/password_field.html:10 templates/users/user_edit.html:24 templates/users/user_edit.html:25
+#: templates/users/user_list.html:35 templates/users/user_list.html:49 templates/users/user_list.html:50
+msgid "Parolni ko'rsatish"
+msgstr "Show password"
+
+#: templates/partials/password_field.html:8 templates/users/user_edit.html:24 templates/users/user_list.html:49
+msgid "Parolni yashirish"
+msgstr "Hide password"
+
 #: templates/users/login.html:17
 msgid "Ro'yxatdan o'ting"
 msgstr "Register"
@@ -1619,8 +1656,8 @@ msgid "Tizimga kirish"
 msgstr "Log in"
 
 #: templates/users/login.html:7
-msgid "Sex omboriga login va parolingiz bilan kiring."
-msgstr "Log in to the workshop warehouse with your username and password."
+msgid "Sex omboriga telefon raqami va parolingiz bilan kiring."
+msgstr "Log in to the workshop warehouse with your phone number and password."
 
 #: templates/users/pending_user_review.html:13
 msgid "Ishchi o'zi tanlagan kasblar belgilangan. Kerak bo'lsa o'zgartiring — u faqat shu kasblarga tegishli materiallarni ko'radi va oladi."
@@ -1722,6 +1759,14 @@ msgstr "An administrator will review your request and confirm your trade. After 
 msgid "Uzoq kutib qolsangiz, sex boshlig'iga ayting."
 msgstr "If it takes too long, tell the workshop manager."
 
+#: templates/users/user_edit.html:11
+msgid "Kirish ma'lumotlari"
+msgstr "Login credentials"
+
+#: templates/users/user_edit.html:30
+msgid "Noma'lum — yangisini o'rnating"
+msgstr "Unknown — set a new one"
+
 #: templates/users/user_edit.html:7
 #, python-format
 msgid "ro'yxatdan o'tgan %(date)s"
@@ -1733,12 +1778,16 @@ msgid "tasdiqlangan %(date)s"
 msgstr "approved %(date)s"
 
 #: templates/users/user_list.html:17
-msgid "Ism yoki login"
-msgstr "Name or username"
+msgid "Ism yoki telefon raqami"
+msgstr "Name or phone number"
 
 #: templates/users/user_list.html:23
 msgid "Kasblari"
 msgstr "Trades"
+
+#: templates/users/user_list.html:23
+msgid "Telefon va parol"
+msgstr "Phone and password"
 
 #: templates/users/user_list.html:29
 msgid "(siz)"
@@ -1748,15 +1797,23 @@ msgstr "(you)"
 msgid "rol yo'q"
 msgstr "no role"
 
-#: templates/users/user_list.html:34
+#: templates/users/user_list.html:38
+msgid "parol noma'lum"
+msgstr "password unknown"
+
+#: templates/users/user_list.html:53
+msgid "noma'lum"
+msgstr "unknown"
+
+#: templates/users/user_list.html:57
 msgid "O'chirilgan"
 msgstr "Disabled"
 
-#: templates/users/user_list.html:36
+#: templates/users/user_list.html:59
 msgid "Tasdiq kutmoqda"
 msgstr "Awaiting approval"
 
-#: templates/users/user_list.html:41
+#: templates/users/user_list.html:64
 msgid "Hech kim topilmadi."
 msgstr "No one found."
 
