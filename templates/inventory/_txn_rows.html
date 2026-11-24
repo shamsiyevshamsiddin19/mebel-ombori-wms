@@ -1,26 +1,141 @@
 {% load wms i18n %}{# Ledger rows. Expects `transactions`; `show_user` and `show_price` flags. #}
-<ul>
+
+{# Desktop Table #}
+<div class="hidden md:block overflow-x-auto">
+  <table class="w-full border-collapse text-left" style="font-size: 13.5px;">
+    <thead>
+      <tr class="border-b border-line bg-raised/50 text-[11px] font-semibold uppercase tracking-wider text-muted">
+        <th class="px-5 py-3 text-left font-semibold">{% translate "Vaqti" %}</th>
+        <th class="px-4 py-3 text-left font-semibold">{% translate "Turi" %}</th>
+        <th class="px-4 py-3 text-left font-semibold">{% translate "Material nomi" %}</th>
+        <th class="px-4 py-3 text-left font-semibold">{% translate "O'lchami" %}</th>
+        {% if show_user %}
+          <th class="px-4 py-3 text-left font-semibold">{% translate "Ishchi" %}</th>
+        {% endif %}
+        <th class="px-4 py-3 text-right font-semibold">{% translate "Miqdor" %}</th>
+        {% if show_price %}
+          <th class="px-4 py-3 text-right font-semibold">{% translate "Birlik narxi" %}</th>
+          <th class="px-5 py-3 text-right font-semibold">{% translate "Jami" %}</th>
+        {% endif %}
+        <th class="px-4 py-3 text-left font-semibold">{% translate "Izoh" %}</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-rule bg-surface">
+      {% for t in transactions %}
+      <tr class="hover:bg-raised/40 transition-colors">
+        {# 1. Vaqti #}
+        <td class="px-5 py-3.5 whitespace-nowrap text-xs text-muted">
+          {{ t.created_at|date:"j E, H:i" }}
+        </td>
+
+        {# 2. Turi #}
+        <td class="px-4 py-3.5 whitespace-nowrap">
+          {% if t.transaction_type == "KIRIM" %}
+            <span class="pill pill-accent text-xs">{% translate "Kirim" %}</span>
+          {% elif t.transaction_type == "CHIQIM" %}
+            <span class="pill pill-neutral text-xs">{% translate "Chiqim" %}{% if t.is_offcut %} · {% translate "qoldiq" %}{% endif %}</span>
+          {% else %}
+            <span class="pill pill-pos text-xs">{% translate "Qoldiq qo'shildi" %}</span>
+          {% endif %}
+        </td>
+
+        {# 3. Material nomi #}
+        <td class="px-4 py-3.5 font-medium text-ink">
+          <span class="block text-[14px] leading-snug">{{ t.material.name }}</span>
+        </td>
+
+        {# 4. O'lchami #}
+        <td class="px-4 py-3.5 whitespace-nowrap">
+          {% if t.is_offcut %}
+            <span class="num font-mono text-xs text-ink">{{ t.offcut_length_mm }} × {{ t.offcut_width_mm }}</span>
+            <span class="text-xs text-muted">{% translate "mm" %}</span>
+          {% else %}
+            <span class="text-muted">—</span>
+          {% endif %}
+        </td>
+
+        {# 5. Ishchi (show_user) #}
+        {% if show_user %}
+        <td class="px-4 py-3.5 whitespace-nowrap text-xs text-ink">
+          {{ t.user.display_name }}
+        </td>
+        {% endif %}
+
+        {# 6. Miqdor #}
+        <td class="px-4 py-3.5 text-right whitespace-nowrap font-mono text-[13.5px]">
+          <span class="font-semibold {% if t.quantity_changed > 0 %}text-accent{% else %}text-ink{% endif %}">
+            {% if t.quantity_changed > 0 %}+{% else %}−{% endif %}{{ t.quantity_changed|absval|qty }}
+          </span>
+          <span class="text-xs text-muted font-sans ml-1">
+            {% if t.is_offcut %}{% translate "dona" %}{% else %}{{ t.material.unit_short }}{% endif %}
+          </span>
+        </td>
+
+        {# 7. Narxlar (show_price) #}
+        {% if show_price %}
+        <td class="px-4 py-3.5 text-right whitespace-nowrap font-mono text-xs text-muted">
+          {% if t.unit_price_usd %}{{ t.unit_price_usd|usd:4 }}{% else %}—{% endif %}
+        </td>
+        <td class="px-5 py-3.5 text-right whitespace-nowrap font-mono text-[13.5px] font-semibold text-ink">
+          {% if t.total_price_usd %}{{ t.total_price_usd|usd }}{% else %}<span class="text-muted font-normal">—</span>{% endif %}
+        </td>
+        {% endif %}
+
+        {# 8. Izoh #}
+        <td class="px-4 py-3.5 text-xs text-muted max-w-[200px] truncate" title="{{ t.notes|default:'' }}">
+          {{ t.notes|default:"—" }}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{# Mobile Card List #}
+<ul class="md:hidden divide-y divide-rule">
   {% for t in transactions %}
-  <li class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 border-t border-rule px-4 py-2.5 md:px-5 {% if show_price %}md:grid-cols-[110px_minmax(0,1fr)_120px_110px_110px]{% else %}md:grid-cols-[110px_minmax(0,1fr)_120px]{% endif %}" style="min-height:52px">
-    <div class="hidden md:block">
-      {% if t.transaction_type == "KIRIM" %}<span class="pill pill-accent">{% translate "Kirim" %}</span>
-      {% elif t.transaction_type == "CHIQIM" %}<span class="pill pill-neutral">{% translate "Chiqim" %}{% if t.is_offcut %} · {% translate "qoldiq" %}{% endif %}</span>
-      {% else %}<span class="pill pill-pos">{% translate "Qoldiq qo'shildi" %}</span>{% endif %}
+  <li class="p-4 flex flex-col gap-2">
+    <div class="flex items-start justify-between gap-3">
+      <div class="min-w-0">
+        <p class="font-medium text-ink text-[15px] truncate">{{ t.material.name }}</p>
+        <p class="text-xs text-muted mt-0.5">
+          {{ t.created_at|date:"j E, H:i" }}
+          {% if show_user %} · {{ t.user.display_name }}{% endif %}
+        </p>
+      </div>
+      <div class="flex-none">
+        {% if t.transaction_type == "KIRIM" %}
+          <span class="pill pill-accent text-xs">{% translate "Kirim" %}</span>
+        {% elif t.transaction_type == "CHIQIM" %}
+          <span class="pill pill-neutral text-xs">{% translate "Chiqim" %}{% if t.is_offcut %} · {% translate "qoldiq" %}{% endif %}</span>
+        {% else %}
+          <span class="pill pill-pos text-xs">{% translate "Qoldiq qo'shildi" %}</span>
+        {% endif %}
+      </div>
     </div>
-    <div class="min-w-0">
-      <p class="truncate font-medium">{{ t.material.name }}{% if t.is_offcut %} <span class="num font-normal text-muted">{{ t.offcut_length_mm }}×{{ t.offcut_width_mm }} {% translate "mm" %}</span>{% endif %}</p>
-      <p class="truncate text-muted" style="font-size:13px">
-        <span class="md:hidden">{% if t.transaction_type == "KIRIM" %}{% translate "Kirim" %}{% elif t.transaction_type == "CHIQIM" %}{% translate "Chiqim" %}{% else %}{% translate "Qoldiq qo'shildi" %}{% endif %} · </span>{{ t.created_at|date:"j E, H:i" }}{% if show_user %} · {{ t.user.display_name }}{% endif %}{% if t.notes %} · {{ t.notes }}{% endif %}
-      </p>
+
+    <div class="flex items-center justify-between text-xs pt-1 border-t border-rule/50">
+      <div class="text-muted">
+        {% if t.is_offcut %}
+          <span class="num font-mono">{{ t.offcut_length_mm }} × {{ t.offcut_width_mm }} mm</span>
+        {% elif t.notes %}
+          <span class="truncate max-w-[180px] inline-block">{{ t.notes }}</span>
+        {% else %}
+          <span>—</span>
+        {% endif %}
+      </div>
+      <div class="num text-right font-mono text-sm">
+        <span class="font-semibold {% if t.quantity_changed > 0 %}text-accent{% else %}text-ink{% endif %}">
+          {% if t.quantity_changed > 0 %}+{% else %}−{% endif %}{{ t.quantity_changed|absval|qty }}
+        </span>
+        <span class="text-xs text-muted font-sans ml-0.5">
+          {% if t.is_offcut %}{% translate "dona" %}{% else %}{{ t.material.unit_short }}{% endif %}
+        </span>
+        {% if show_price and t.total_price_usd %}
+          <span class="block text-xs text-muted mt-0.5">{{ t.total_price_usd|usd }}</span>
+        {% endif %}
+      </div>
     </div>
-    <div class="num text-right">
-      <span class="font-semibold">{% if t.quantity_changed > 0 %}+{% else %}−{% endif %}{{ t.quantity_changed|absval|qty }}</span> <span class="text-muted">{% if t.is_offcut %}{% translate "dona" %}{% else %}{{ t.material.unit_short }}{% endif %}</span>
-      {% if show_price %}<p class="text-muted md:hidden" style="font-size:12px">{% if t.total_price_usd %}{{ t.total_price_usd|usd }}{% else %}—{% endif %}</p>{% endif %}
-    </div>
-    {% if show_price %}
-    <div class="num hidden text-right text-muted md:block">{% if t.unit_price_usd %}{{ t.unit_price_usd|usd:4 }}{% else %}—{% endif %}</div>
-    <div class="num hidden text-right md:block">{% if t.total_price_usd %}{{ t.total_price_usd|usd }}{% else %}<span class="text-muted">—</span>{% endif %}</div>
-    {% endif %}
   </li>
   {% endfor %}
 </ul>

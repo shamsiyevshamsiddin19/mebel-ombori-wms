@@ -88,9 +88,6 @@
     <p class="text-muted" style="font-size:12px">{% translate "o'zgartirib bo'lmaydigan jurnal" %}</p>
   </div>
   {% if transactions %}
-    <div class="hidden grid-cols-[110px_minmax(0,1fr)_120px_110px_110px] gap-x-4 px-5 pb-2 text-muted md:grid" style="font-size:12px" aria-hidden="true">
-      <span>{% translate "Turi" %}</span><span>{% translate "Material · sana · ishchi" %}</span><span class="text-right">{% translate "Miqdor" %}</span><span class="text-right">{% translate "Birlik narxi" %}</span><span class="text-right">{% translate "Jami" %}</span>
-    </div>
     {% include "inventory/_txn_rows.html" with show_user=True show_price=True %}
     {% include "partials/pagination.html" %}
   {% else %}

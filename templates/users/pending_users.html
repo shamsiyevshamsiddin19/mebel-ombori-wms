@@ -2,30 +2,102 @@
 {% load wms i18n %}
 {% block title %}{% translate "So'rovlar" %}{% endblock %}
 {% block content %}
-<h1 class="sr-only">{% translate "So'rovlar" %}</h1>{# visible only to screen readers #}
-
-<div class="panel max-w-[920px] overflow-hidden">
-  {% if pending_users %}
-  <div class="hidden grid-cols-[minmax(0,1fr)_220px_120px_auto] gap-x-4 px-5 pb-2 pt-4 text-muted md:grid" style="font-size:12px" aria-hidden="true">
-    <span>{% translate "Ishchi" %}</span><span>{% translate "Tanlagan kasbi" %}</span><span class="text-right">{% translate "Yuborilgan" %}</span><span></span>
+<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+  <div>
+    <h1 class="font-bold text-[24px] leading-8 lg:text-[30px] lg:leading-9 text-ink">{% translate "So'rovlar" %}</h1>
+    <p class="mt-0.5 text-muted" style="font-size:14px">
+      {% translate "Ro'yxatdan o'tib, tasdiq kutayotgan yangi xodimlar" %}
+      {% if pending_users %}· <span class="num font-medium text-ink">{{ pending_users|length }}</span> ta yangi so'rov{% endif %}
+    </p>
   </div>
-  <ul>
+  <a href="{% url 'users:user_list' %}" class="btn btn-secondary min-h-10 px-3.5 text-sm font-medium">
+    {% icon "back" 16 %}
+    <span>{% translate "Barcha ishchilar" %}</span>
+  </a>
+</div>
+
+<div class="panel mt-5 overflow-hidden shadow-xs">
+  {% if pending_users %}
+  {# Desktop Table #}
+  <div class="hidden md:block overflow-x-auto">
+    <table class="w-full border-collapse text-left" style="font-size: 13.5px;">
+      <thead>
+        <tr class="border-b border-line bg-raised/50 text-[11px] font-semibold uppercase tracking-wider text-muted">
+          <th class="px-5 py-3 text-left font-semibold">{% translate "Ishchi" %}</th>
+          <th class="px-5 py-3 text-left font-semibold">{% translate "Telefon raqami" %}</th>
+          <th class="px-4 py-3 text-left font-semibold">{% translate "Tanlagan kasbi" %}</th>
+          <th class="px-4 py-3 text-right font-semibold">{% translate "Yuborilgan sana" %}</th>
+          <th class="px-5 py-3 text-right font-semibold">{% translate "Amal" %}</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-rule bg-surface">
+        {% for p in pending_users %}
+        <tr class="hover:bg-raised/40 transition-colors">
+          <td class="px-5 py-3.5 font-medium text-ink">
+            {{ p.display_name }}
+          </td>
+          <td class="px-5 py-3.5 whitespace-nowrap">
+            <span class="num font-mono text-[13px] text-ink">{{ p.phone_display|default:p.username }}</span>
+          </td>
+          <td class="px-4 py-3.5">
+            <div class="flex flex-wrap gap-1">
+              {% for r in p.roles %}
+                <span class="inline-flex items-center rounded bg-surface-raised px-1.5 py-0.5 text-xs font-medium text-muted">
+                  {{ r|short_role }}
+                </span>
+              {% empty %}
+                <span class="text-xs text-muted">—</span>
+              {% endfor %}
+            </div>
+          </td>
+          <td class="px-4 py-3.5 text-right whitespace-nowrap">
+            <span class="num text-xs text-muted">{{ p.date_joined|date:"Y-m-d, H:i" }}</span>
+          </td>
+          <td class="px-5 py-3.5 text-right whitespace-nowrap">
+            <a href="{% url 'users:pending_user_review' p.pk %}" class="btn btn-primary min-h-8 px-3 text-xs font-medium">
+              {% translate "Ko'rib chiqish" %}
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {# Mobile Card List #}
+  <ul class="md:hidden divide-y divide-rule">
     {% for p in pending_users %}
-    <li class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 border-t border-rule px-4 py-3 md:grid-cols-[minmax(0,1fr)_220px_120px_auto] md:px-5">
-      <div class="min-w-0">
-        <p class="truncate font-medium">{{ p.display_name }}</p>
-        <p class="truncate text-muted" style="font-size:13px">@{{ p.username }}<span class="md:hidden"> · {% for r in p.roles %}{{ r|short_role }}{% if not forloop.last %}, {% endif %}{% endfor %}</span></p>
+    <li class="flex items-center justify-between gap-3 px-4 py-3.5">
+      <div class="min-w-0 flex-1">
+        <p class="truncate font-medium text-ink text-[15px]">{{ p.display_name }}</p>
+        <p class="mt-0.5 truncate text-xs text-muted font-mono">{{ p.phone_display|default:p.username }}</p>
+        <div class="mt-1 flex flex-wrap gap-1">
+          {% for r in p.roles %}
+            <span class="rounded bg-surface-raised px-1 py-0.5 text-[10px] text-muted">{{ r|short_role }}</span>
+          {% endfor %}
+        </div>
+        <p class="mt-1 text-[11px] text-muted">{{ p.date_joined|date:"Y-m-d, H:i" }}</p>
       </div>
-      <p class="hidden truncate md:block">{% for r in p.roles %}{{ r|short_role }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
-      <p class="num hidden text-right text-muted md:block">{{ p.date_joined|date:"Y-m-d" }}</p>
-      <a href="{% url 'users:pending_user_review' p.pk %}" class="btn btn-primary min-h-11 md:min-h-9">{% translate "Ko'rib chiqish" %}</a>
+      <div class="flex-none">
+        <a href="{% url 'users:pending_user_review' p.pk %}" class="btn btn-primary min-h-8 px-2.5 text-xs font-medium">
+          {% translate "Ko'rib chiqish" %}
+        </a>
+      </div>
     </li>
     {% endfor %}
   </ul>
+
   {% else %}
-    <div class="px-5 py-8">
-      <p class="font-medium">{% translate "Hammasi ko'rib chiqilgan." %}</p>
-      <p class="mt-1 text-muted">{% blocktranslate with page='<span class="font-medium text-ink">/accounts/register/</span>' %}Ishchi {{ page }} sahifasida ro'yxatdan o'tganda so'rovi shu yerda paydo bo'ladi.{% endblocktranslate %} <a class="font-medium text-ink underline underline-offset-4" href="{% url 'users:user_list' %}">{% translate "Barcha ishchilar" %}</a></p>
+    <div class="px-5 py-10 text-center">
+      <p class="font-medium text-ink text-[15px]">{% translate "Hammasi ko'rib chiqilgan." %}</p>
+      <p class="mt-2 text-sm text-muted">
+        {% blocktranslate with page='<span class="font-medium text-ink">/accounts/register/</span>' %}Ishchi {{ page }} sahifasida ro'yxatdan o'tganda so'rovi shu yerda paydo bo'ladi.{% endblocktranslate %}
+      </p>
+      <div class="mt-4">
+        <a class="btn btn-secondary text-xs" href="{% url 'users:user_list' %}">
+          {% translate "Barcha ishchilar" %}
+        </a>
+      </div>
     </div>
   {% endif %}
 </div>

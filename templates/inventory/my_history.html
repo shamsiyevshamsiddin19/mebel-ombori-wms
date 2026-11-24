@@ -5,11 +5,8 @@
 <h1 class="font-bold text-[24px] leading-8 lg:text-[32px] lg:leading-10">{% translate "Mening tarixim" %}</h1>
 <p class="mt-1 text-muted" style="font-size:15px">{% translate "Siz olgan materiallar va qo'shgan qoldiqlar" %} · {% blocktranslate count n=page_obj.paginator.count|default:0 %}jami <span class="num">{{ n }}</span> ta yozuv{% plural %}jami <span class="num">{{ n }}</span> ta yozuv{% endblocktranslate %}</p>
 
-<div class="panel mt-6 overflow-hidden">
+<div class="panel mt-6 overflow-hidden shadow-xs">
   {% if transactions %}
-    <div class="hidden grid-cols-[110px_minmax(0,1fr)_120px] gap-x-4 px-5 pb-2 pt-4 text-muted md:grid" style="font-size:12px" aria-hidden="true">
-      <span>{% translate "Turi" %}</span><span>{% translate "Material" %}</span><span class="text-right">{% translate "Miqdor" %}</span>
-    </div>
     {% include "inventory/_txn_rows.html" with show_user=False show_price=False %}
     {% include "partials/pagination.html" %}
   {% else %}
