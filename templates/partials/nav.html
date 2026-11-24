@@ -1,4 +1,5 @@
-{% load wms i18n %}<ul class="grid gap-0.5">
+{% load wms i18n %}<p class="mb-1.5 px-2.5 text-zinc-500 text-[10px] font-bold uppercase tracking-wider" :class="{ 'lg:hidden': collapsed }">{% translate "Ombor" %}</p>
+<ul class="grid gap-0.5">
   <li>
     <a class="nav-item relative"
        href="{% url 'inventory:home' %}"
@@ -32,8 +33,8 @@
 </ul>
 
 {% if user.is_warehouse_admin %}
-<p class="mb-1.5 mt-6 px-2.5 text-muted text-[11px] font-semibold uppercase tracking-wider" :class="{ 'lg:hidden': collapsed }">{% translate "Boshqaruv" %}</p>
-<div class="hidden my-3 mx-2 border-t border-line/60" :class="{ 'lg:block': collapsed }"></div>
+<p class="mb-1.5 mt-5 px-2.5 text-zinc-500 text-[10px] font-bold uppercase tracking-wider" :class="{ 'lg:hidden': collapsed }">{% translate "Boshqaruv" %}</p>
+<div class="hidden my-3 mx-2 border-t border-[#27272a]" :class="{ 'lg:block': collapsed }"></div>
 <ul class="grid gap-0.5">
   <li>
     <a class="nav-item relative"

@@ -37,23 +37,25 @@
      :class="collapsed ? 'lg:grid lg:grid-cols-[68px_minmax(0,1fr)]' : 'lg:grid lg:grid-cols-[230px_minmax(0,1fr)]'">
 
   {# ---- Sidebar (desktop) ---- #}
-  <aside class="sticky top-0 hidden h-screen flex-col border-r border-line bg-ground transition-[width] duration-150 lg:flex overflow-hidden"
+  <aside class="sidebar-dark sticky top-0 hidden h-screen flex-col border-r border-[#27272a] bg-[#09090b] transition-[width] duration-150 lg:flex overflow-hidden"
          :class="collapsed ? 'w-[68px]' : 'w-[230px]'">
     
     {# Top brand row with toggle icon #}
-    <div class="flex h-16 flex-none items-center border-b border-line"
+    <div class="flex h-16 flex-none items-center border-b border-[#27272a]"
          :class="collapsed ? 'justify-center px-2' : 'justify-between px-4'">
       
       {# Logo + Name when expanded #}
       <a href="{% url 'inventory:home' %}" class="flex items-center gap-2.5 min-w-0" :class="{ 'lg:hidden': collapsed }">
-        <img src="{% static 'img/mark.svg' %}" alt="" width="26" height="26" class="flex-none">
-        <span class="font-semibold text-ink text-[15px] truncate">{{ brand_name }}</span>
+        <div class="flex h-7 w-7 flex-none items-center justify-center rounded-md bg-[#27272a] text-white font-bold text-xs shadow-xs">
+          P
+        </div>
+        <span class="font-bold text-white text-[15px] tracking-tight truncate">{{ brand_name }}</span>
       </a>
 
       {# Sidebar toggle button #}
       <button type="button"
               @click="toggleSidebar()"
-              class="flex h-9 w-9 flex-none items-center justify-center rounded-lg text-muted hover:text-ink hover:bg-raised transition-colors cursor-pointer"
+              class="flex h-9 w-9 flex-none items-center justify-center rounded-lg text-zinc-400 hover:text-white hover:bg-[#18181b] transition-colors cursor-pointer"
               :title="collapsed ? '{% translate 'Menyuni ochish' %}' : '{% translate 'Yopish' %}'"
               :aria-label="collapsed ? '{% translate 'Menyuni ochish' %}' : '{% translate 'Yopish' %}'">
         <svg class="h-4 w-4 transition-transform duration-200" :class="{ 'rotate-180': collapsed }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -70,30 +72,86 @@
          aria-label="{% translate 'Asosiy menyu' %}">
       {% include "partials/nav.html" %}
     </nav>
+
+    {# Bottom User Profile in Sidebar #}
+    <div class="flex-none border-t border-[#27272a] p-3 flex items-center justify-between"
+         :class="collapsed ? 'justify-center !px-2' : ''">
+      <div class="flex items-center gap-2.5 overflow-hidden" :class="{ 'lg:hidden': collapsed }">
+        <span class="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-[#27272a] text-xs font-bold text-white border border-white/10 select-none">
+          {{ user.display_name|slice:":2"|upper }}
+        </span>
+        <div class="overflow-hidden leading-tight">
+          <p class="font-semibold text-white text-xs truncate">{{ user.display_name }}</p>
+          <p class="text-zinc-400 text-[11px] truncate">
+            {% for r in user.roles %}{{ r|short_role }}{% if not forloop.last %} · {% endif %}{% empty %}{% translate "Rol yo'q" %}{% endfor %}
+          </p>
+        </div>
+      </div>
+      <div class="hidden" :class="{ 'lg:flex lg:justify-center': collapsed }">
+        <span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#27272a] text-xs font-bold text-white border border-white/10 select-none"
+              title="{{ user.display_name }}">
+          {{ user.display_name|slice:":2"|upper }}
+        </span>
+      </div>
+
+      <form method="post" action="{% url 'users:logout' %}" class="flex-none" :class="{ 'lg:hidden': collapsed }">
+        {% csrf_token %}
+        <button type="submit" class="flex h-7 w-7 items-center justify-center rounded text-zinc-400 hover:text-white hover:bg-[#18181b] transition-colors cursor-pointer" title="{% translate 'Chiqish' %}">
+          {% icon "logout" 16 %}
+        </button>
+      </form>
+    </div>
   </aside>
 
   <div class="flex min-w-0 flex-col">
     {# ---- Top bar ---- #}
-    <header class="sticky top-0 z-30 flex h-14 flex-none items-center gap-3 border-b border-line bg-ground px-4 lg:h-16 lg:px-[29px]">
+    <header class="sticky top-0 z-30 flex h-14 flex-none items-center gap-3 border-b border-line bg-surface px-4 lg:h-16 lg:px-[29px]">
       <a href="{% url 'inventory:home' %}" class="flex items-center gap-2 lg:hidden">
-        <img src="{% static 'img/mark.svg' %}" alt="" width="28" height="28">
-        <span class="font-semibold">{{ brand_name }}</span>
+        <div class="flex h-7 w-7 flex-none items-center justify-center rounded-md bg-ink text-white font-bold text-xs">P</div>
+        <span class="font-semibold text-ink">{{ brand_name }}</span>
       </a>
+
+      {# Desktop breadcrumbs #}
+      <div class="hidden lg:flex items-center gap-2 text-xs font-medium text-muted">
+        <a href="{% url 'inventory:home' %}" class="hover:text-ink cursor-pointer">{% translate "Ombor" %}</a>
+        {% block breadcrumbs %}
+          {% if nav_section and nav_section != "home" %}
+            <svg class="w-3.5 h-3.5 text-control" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <span class="font-bold text-ink">
+              {% if nav_section == "offcut_add" %}{% translate "Qoldiq qo'shish" %}
+              {% elif nav_section == "my_history" %}{% translate "Mening tarixim" %}
+              {% elif nav_section == "dashboard" %}{% translate "Panel" %}
+              {% elif nav_section == "kirim" %}{% translate "Kirim" %}
+              {% elif nav_section == "materials" %}{% translate "Materiallar" %}
+              {% elif nav_section == "reports" %}{% translate "Oylik hisobot" %}
+              {% elif nav_section == "pending_users" %}{% translate "So'rovlar" %}
+              {% elif nav_section == "users" %}{% translate "Ishchilar" %}
+              {% endif %}
+            </span>
+          {% endif %}
+        {% endblock %}
+      </div>
+
       <div class="ml-auto flex h-full items-center gap-4">
         {% if user.is_warehouse_admin %}
           <a href="{% url 'inventory:dashboard' %}" class="flex items-baseline gap-2 whitespace-nowrap" title="{% translate 'Ombordagi butun materiallarning joriy qiymati' %}">
             <span class="hidden text-muted sm:inline" style="font-size:12px">{% translate "Ombor qiymati" %}</span>
-            <span class="num font-semibold">{{ nav_valuation_usd|usd }}</span>
+            <span class="num font-semibold text-ink">{{ nav_valuation_usd|usd }}</span>
           </a>
         {% endif %}
+
+        {# Desktop language switcher #}
+        <div class="hidden sm:flex items-center">
+          {% include "partials/lang_switch.html" %}
+        </div>
 
         {# ---- User profile dropdown (desktop) ---- #}
         <div class="relative hidden h-full items-center border-l border-line pl-3 lg:flex" x-data="{ userMenu: false }">
           <button type="button"
                   @click="userMenu = !userMenu"
                   @keydown.escape.window="userMenu = false"
-                  class="flex items-center gap-2.5 rounded-lg py-1.5 pl-2.5 pr-2 transition-colors hover:bg-raised select-none cursor-pointer border border-transparent hover:border-line/60"
-                  :class="{ 'bg-raised border-line/60': userMenu }"
+                  class="flex items-center gap-2.5 rounded-lg py-1.5 pl-2.5 pr-2 transition-colors hover:bg-raised select-none cursor-pointer border border-transparent hover:border-line"
+                  :class="{ 'bg-raised border-line': userMenu }"
                   aria-haspopup="true"
                   :aria-expanded="userMenu">
             <div class="text-right leading-tight">
@@ -102,7 +160,7 @@
                 {% for r in user.roles %}{{ r|short_role }}{% if not forloop.last %} · {% endif %}{% empty %}{% translate "Rol yo'q" %}{% endfor %}
               </p>
             </div>
-            <span class="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-accent-soft text-xs font-bold text-accent-ink border border-accent/20 select-none">
+            <span class="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-ink text-xs font-bold text-white shadow-xs select-none">
               {{ user.display_name|slice:":2"|upper }}
             </span>
             <svg class="h-3.5 w-3.5 text-muted transition-transform duration-200" :class="{ 'rotate-180': userMenu }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -155,6 +213,10 @@
             </form>
           </div>
         </div>
+
+        <button type="button" class="btn btn-ghost -mr-2 !px-2 lg:hidden" @click="menu = true" aria-label="{% translate 'Menyuni ochish' %}">{% icon "menu" 22 %}</button>
+      </div>
+    </header>
 
         <button type="button" class="btn btn-ghost -mr-2 !px-2 lg:hidden" @click="menu = true" aria-label="{% translate 'Menyuni ochish' %}">{% icon "menu" 22 %}</button>
       </div>
