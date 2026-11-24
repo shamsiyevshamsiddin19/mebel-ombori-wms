@@ -196,12 +196,20 @@
   }
 
   /* Navigation */
-  .nav-item { @apply flex items-center gap-2.5 rounded-[6px] px-2.5 text-ink; height: 36px; }
+  .nav-item { @apply flex items-center gap-2.5 rounded-[6px] px-2.5 text-ink transition-colors; height: 36px; }
   .nav-item svg { width: 16px; height: 16px; color: var(--color-muted); flex: none; }
-  .nav-item:hover { @apply bg-raised; }
-  .nav-item[aria-current="page"] { @apply bg-accent-soft text-accent-ink font-medium; }
+  .nav-item:hover { @apply bg-raised text-ink; }
+  .nav-item[aria-current="page"] { @apply bg-accent-soft text-accent-ink font-semibold; }
   .nav-item[aria-current="page"] svg { color: var(--color-accent); }
   .nav-count { @apply ml-auto rounded-full bg-negative px-1.5 text-white tabular-nums; font-size: 11px; line-height: 18px; min-width: 18px; text-align: center; }
+
+  /* Collapsed sidebar initial load state */
+  html.sidebar-collapsed aside { width: 68px !important; }
+  @media (min-width: 1024px) {
+    html.sidebar-collapsed .min-h-screen {
+      grid-template-columns: 68px minmax(0, 1fr) !important;
+    }
+  }
 
   .tab { @apply -mb-px inline-flex items-center gap-2 border-b-2 border-transparent px-1 pb-2.5 text-muted whitespace-nowrap; }
   .tab:hover { @apply text-ink; }

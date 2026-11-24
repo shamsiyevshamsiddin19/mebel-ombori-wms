@@ -1,16 +1,103 @@
 {% load wms i18n %}<ul class="grid gap-0.5">
-  <li><a class="nav-item" href="{% url 'inventory:home' %}" {% if nav_section == "home" %}aria-current="page"{% endif %}>{% icon "box" %} {% translate "Ombor" %}</a></li>
-  <li><a class="nav-item" href="{% url 'inventory:offcut_add' %}" {% if nav_section == "offcut_add" %}aria-current="page"{% endif %}>{% icon "offcut" %} {% translate "Qoldiq qo'shish" %}</a></li>
-  <li><a class="nav-item" href="{% url 'inventory:my_history' %}" {% if nav_section == "my_history" %}aria-current="page"{% endif %}>{% icon "clock" %} {% translate "Mening tarixim" %}</a></li>
+  <li>
+    <a class="nav-item relative"
+       href="{% url 'inventory:home' %}"
+       title="{% translate "Ombor" %}"
+       :class="{ 'lg:justify-center lg:!px-0 lg:w-10 lg:h-10 lg:mx-auto': collapsed }"
+       {% if nav_section == "home" %}aria-current="page"{% endif %}>
+      {% icon "box" 18 "flex-none" %}
+      <span class="truncate" :class="{ 'lg:hidden': collapsed }">{% translate "Ombor" %}</span>
+    </a>
+  </li>
+  <li>
+    <a class="nav-item relative"
+       href="{% url 'inventory:offcut_add' %}"
+       title="{% translate "Qoldiq qo'shish" %}"
+       :class="{ 'lg:justify-center lg:!px-0 lg:w-10 lg:h-10 lg:mx-auto': collapsed }"
+       {% if nav_section == "offcut_add" %}aria-current="page"{% endif %}>
+      {% icon "offcut" 18 "flex-none" %}
+      <span class="truncate" :class="{ 'lg:hidden': collapsed }">{% translate "Qoldiq qo'shish" %}</span>
+    </a>
+  </li>
+  <li>
+    <a class="nav-item relative"
+       href="{% url 'inventory:my_history' %}"
+       title="{% translate "Mening tarixim" %}"
+       :class="{ 'lg:justify-center lg:!px-0 lg:w-10 lg:h-10 lg:mx-auto': collapsed }"
+       {% if nav_section == "my_history" %}aria-current="page"{% endif %}>
+      {% icon "clock" 18 "flex-none" %}
+      <span class="truncate" :class="{ 'lg:hidden': collapsed }">{% translate "Mening tarixim" %}</span>
+    </a>
+  </li>
 </ul>
+
 {% if user.is_warehouse_admin %}
-<p class="mb-1.5 mt-7 px-2.5 text-muted" style="font-size:12px">{% translate "Boshqaruv" %}</p>
+<p class="mb-1.5 mt-6 px-2.5 text-muted text-[11px] font-semibold uppercase tracking-wider" :class="{ 'lg:hidden': collapsed }">{% translate "Boshqaruv" %}</p>
+<div class="hidden my-3 mx-2 border-t border-line/60" :class="{ 'lg:block': collapsed }"></div>
 <ul class="grid gap-0.5">
-  <li><a class="nav-item" href="{% url 'inventory:dashboard' %}" {% if nav_section == "dashboard" %}aria-current="page"{% endif %}>{% icon "dashboard" %} {% translate "Panel" %}</a></li>
-  <li><a class="nav-item" href="{% url 'inventory:kirim' %}" {% if nav_section == "kirim" %}aria-current="page"{% endif %}>{% icon "arrival" %} {% translate "Kirim" %}</a></li>
-  <li><a class="nav-item" href="{% url 'inventory:material_list' %}" {% if nav_section == "materials" %}aria-current="page"{% endif %}>{% icon "layers" %} {% translate "Materiallar" %}</a></li>
-  <li><a class="nav-item" href="{% url 'inventory:reports' %}" {% if nav_section == "reports" %}aria-current="page"{% endif %}>{% icon "report" %} {% translate "Oylik hisobot" %}</a></li>
-  <li><a class="nav-item" href="{% url 'users:pending_users' %}" {% if nav_section == "pending_users" %}aria-current="page"{% endif %}>{% icon "check" %} {% translate "So'rovlar" %}{% if nav_pending_users %}<span class="nav-count" aria-label="{% blocktranslate count n=nav_pending_users|add:0 %}{{ n }} ta tasdiq kutayotgan so'rov{% plural %}{{ n }} ta tasdiq kutayotgan so'rov{% endblocktranslate %}">{{ nav_pending_users }}</span>{% endif %}</a></li>
-  <li><a class="nav-item" href="{% url 'users:user_list' %}" {% if nav_section == "users" %}aria-current="page"{% endif %}>{% icon "users" %} {% translate "Ishchilar" %}</a></li>
+  <li>
+    <a class="nav-item relative"
+       href="{% url 'inventory:dashboard' %}"
+       title="{% translate "Panel" %}"
+       :class="{ 'lg:justify-center lg:!px-0 lg:w-10 lg:h-10 lg:mx-auto': collapsed }"
+       {% if nav_section == "dashboard" %}aria-current="page"{% endif %}>
+      {% icon "dashboard" 18 "flex-none" %}
+      <span class="truncate" :class="{ 'lg:hidden': collapsed }">{% translate "Panel" %}</span>
+    </a>
+  </li>
+  <li>
+    <a class="nav-item relative"
+       href="{% url 'inventory:kirim' %}"
+       title="{% translate "Kirim" %}"
+       :class="{ 'lg:justify-center lg:!px-0 lg:w-10 lg:h-10 lg:mx-auto': collapsed }"
+       {% if nav_section == "kirim" %}aria-current="page"{% endif %}>
+      {% icon "arrival" 18 "flex-none" %}
+      <span class="truncate" :class="{ 'lg:hidden': collapsed }">{% translate "Kirim" %}</span>
+    </a>
+  </li>
+  <li>
+    <a class="nav-item relative"
+       href="{% url 'inventory:material_list' %}"
+       title="{% translate "Materiallar" %}"
+       :class="{ 'lg:justify-center lg:!px-0 lg:w-10 lg:h-10 lg:mx-auto': collapsed }"
+       {% if nav_section == "materials" %}aria-current="page"{% endif %}>
+      {% icon "layers" 18 "flex-none" %}
+      <span class="truncate" :class="{ 'lg:hidden': collapsed }">{% translate "Materiallar" %}</span>
+    </a>
+  </li>
+  <li>
+    <a class="nav-item relative"
+       href="{% url 'inventory:reports' %}"
+       title="{% translate "Oylik hisobot" %}"
+       :class="{ 'lg:justify-center lg:!px-0 lg:w-10 lg:h-10 lg:mx-auto': collapsed }"
+       {% if nav_section == "reports" %}aria-current="page"{% endif %}>
+      {% icon "report" 18 "flex-none" %}
+      <span class="truncate" :class="{ 'lg:hidden': collapsed }">{% translate "Oylik hisobot" %}</span>
+    </a>
+  </li>
+  <li>
+    <a class="nav-item relative"
+       href="{% url 'users:pending_users' %}"
+       title="{% translate "So'rovlar" %}{% if nav_pending_users %} ({{ nav_pending_users }}){% endif %}"
+       :class="{ 'lg:justify-center lg:!px-0 lg:w-10 lg:h-10 lg:mx-auto': collapsed }"
+       {% if nav_section == "pending_users" %}aria-current="page"{% endif %}>
+      {% icon "check" 18 "flex-none" %}
+      <span class="truncate" :class="{ 'lg:hidden': collapsed }">{% translate "So'rovlar" %}</span>
+      {% if nav_pending_users %}
+        <span class="nav-count" :class="{ 'lg:hidden': collapsed }" aria-label="{% blocktranslate count n=nav_pending_users|add:0 %}{{ n }} ta tasdiq kutayotgan so'rov{% plural %}{{ n }} ta tasdiq kutayotgan so'rov{% endblocktranslate %}">{{ nav_pending_users }}</span>
+        <span class="hidden absolute top-1 right-1 h-2 w-2 rounded-full bg-negative" :class="{ 'lg:block': collapsed }"></span>
+      {% endif %}
+    </a>
+  </li>
+  <li>
+    <a class="nav-item relative"
+       href="{% url 'users:user_list' %}"
+       title="{% translate "Ishchilar" %}"
+       :class="{ 'lg:justify-center lg:!px-0 lg:w-10 lg:h-10 lg:mx-auto': collapsed }"
+       {% if nav_section == "users" %}aria-current="page"{% endif %}>
+      {% icon "users" 18 "flex-none" %}
+      <span class="truncate" :class="{ 'lg:hidden': collapsed }">{% translate "Ishchilar" %}</span>
+    </a>
+  </li>
 </ul>
 {% endif %}

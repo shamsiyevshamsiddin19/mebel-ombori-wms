@@ -9,19 +9,65 @@
   <link rel="preload" href="{% static 'fonts/dm-sans-latin-400-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
   <script defer src="{% static 'vendor/alpine.min.js' %}"></script>
+  <script>
+    try {
+      if (localStorage.getItem('sidebar_collapsed') === 'true') {
+        document.documentElement.classList.add('sidebar-collapsed');
+      }
+    } catch (e) {}
+  </script>
   {% block head %}{% endblock %}
 </head>
 <body>
 {% if user.is_authenticated and user.can_use_system %}
-<div x-data="{ menu: false }" class="min-h-screen lg:grid lg:grid-cols-[230px_minmax(0,1fr)]">
+<div x-data="{
+       menu: false,
+       collapsed: localStorage.getItem('sidebar_collapsed') === 'true',
+       toggleSidebar() {
+         this.collapsed = !this.collapsed;
+         localStorage.setItem('sidebar_collapsed', this.collapsed ? 'true' : 'false');
+         if (this.collapsed) {
+           document.documentElement.classList.add('sidebar-collapsed');
+         } else {
+           document.documentElement.classList.remove('sidebar-collapsed');
+         }
+       }
+     }"
+     class="min-h-screen transition-[grid-template-columns] duration-150"
+     :class="collapsed ? 'lg:grid lg:grid-cols-[68px_minmax(0,1fr)]' : 'lg:grid lg:grid-cols-[230px_minmax(0,1fr)]'">
 
   {# ---- Sidebar (desktop) ---- #}
-  <aside class="sticky top-0 hidden h-screen flex-col border-r border-line bg-ground lg:flex">
-    <a href="{% url 'inventory:home' %}" class="flex h-16 flex-none items-center gap-2.5 border-b border-line px-5">
-      <img src="{% static 'img/mark.svg' %}" alt="" width="28" height="28">
-      <span class="font-semibold" style="font-size:15px">{{ brand_name }}</span>
-    </a>
-    <nav class="flex-1 overflow-y-auto px-3 py-4" aria-label="{% translate 'Asosiy menyu' %}">
+  <aside class="sticky top-0 hidden h-screen flex-col border-r border-line bg-ground transition-[width] duration-150 lg:flex overflow-hidden"
+         :class="collapsed ? 'w-[68px]' : 'w-[230px]'">
+    
+    {# Top brand row with toggle icon #}
+    <div class="flex h-16 flex-none items-center border-b border-line"
+         :class="collapsed ? 'justify-center px-2' : 'justify-between px-4'">
+      
+      {# Logo + Name when expanded #}
+      <a href="{% url 'inventory:home' %}" class="flex items-center gap-2.5 min-w-0" :class="{ 'lg:hidden': collapsed }">
+        <img src="{% static 'img/mark.svg' %}" alt="" width="26" height="26" class="flex-none">
+        <span class="font-semibold text-ink text-[15px] truncate">{{ brand_name }}</span>
+      </a>
+
+      {# Sidebar toggle button #}
+      <button type="button"
+              @click="toggleSidebar()"
+              class="flex h-9 w-9 flex-none items-center justify-center rounded-lg text-muted hover:text-ink hover:bg-raised transition-colors cursor-pointer"
+              :title="collapsed ? '{% translate 'Menyuni ochish' %}' : '{% translate 'Yopish' %}'"
+              :aria-label="collapsed ? '{% translate 'Menyuni ochish' %}' : '{% translate 'Yopish' %}'">
+        <svg class="h-4 w-4 transition-transform duration-200" :class="{ 'rotate-180': collapsed }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect width="18" height="18" x="3" y="3" rx="2"/>
+          <path d="M9 3v18"/>
+          <path d="m14 9-3 3 3 3"/>
+        </svg>
+      </button>
+    </div>
+
+    {# Nav Links #}
+    <nav class="flex-1 overflow-y-auto overflow-x-hidden py-4"
+         :class="collapsed ? 'px-2' : 'px-3'"
+         aria-label="{% translate 'Asosiy menyu' %}">
       {% include "partials/nav.html" %}
     </nav>
   </aside>
