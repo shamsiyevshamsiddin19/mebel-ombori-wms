@@ -266,9 +266,12 @@ class OffcutForm(forms.Form):
     def __init__(self, *args, user: User, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["material"].queryset = offcut_capable_materials(user).select_related("whole_stock")
-        self.fields["material"].widget.attrs.update({"x-model": "material"})
+        self.fields["material"].widget.attrs.update({"x-model": "material", "class": "control"})
         for name, model in (("length_mm", "length"), ("width_mm", "width"), ("quantity", "pieces")):
-            self.fields[name].widget.attrs.update({"inputmode": "numeric", "x-model.number": model})
+            self.fields[name].widget.attrs.update(
+                {"inputmode": "numeric", "x-model.number": model, "class": "control font-mono"}
+            )
+        self.fields["notes"].widget.attrs.update({"class": "control"})
 
 
 class WithdrawOffcutForm(forms.Form):

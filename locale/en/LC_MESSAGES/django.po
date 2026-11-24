@@ -11,7 +11,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: apps/inventory/apps.py:9 templates/base.html:7 templates/inventory/home.html:3 templates/inventory/home.html:11
-#: templates/inventory/offcut_form.html:26 templates/inventory/withdraw_offcut.html:7 templates/inventory/withdraw_whole.html:15 templates/partials/bottom_nav.html:2
+#: templates/inventory/offcut_form.html:31 templates/inventory/withdraw_offcut.html:7 templates/inventory/withdraw_whole.html:15 templates/partials/bottom_nav.html:2
 #: templates/partials/nav.html:2
 msgid "Ombor"
 msgstr "Warehouse"
@@ -33,6 +33,7 @@ msgid "Yangi kategoriya nomini yozing."
 msgstr "Enter the new category name."
 
 #: apps/inventory/forms.py:173 apps/inventory/forms.py:254 apps/inventory/forms.py:301 apps/inventory/views.py:453
+#: templates/inventory/offcut_form.html:68
 msgid "Material"
 msgstr "Material"
 
@@ -98,15 +99,15 @@ msgstr "How much did you take?"
 msgid "Buyurtma yoki mijoz nomi"
 msgstr "Order or customer name"
 
-#: apps/inventory/forms.py:256 apps/inventory/models.py:224 apps/inventory/models.py:267
+#: apps/inventory/forms.py:256 apps/inventory/models.py:224 apps/inventory/models.py:267 templates/inventory/offcut_form.html:69
 msgid "Uzunligi (mm)"
 msgstr "Length (mm)"
 
-#: apps/inventory/forms.py:257 apps/inventory/models.py:225 apps/inventory/models.py:268
+#: apps/inventory/forms.py:257 apps/inventory/models.py:225 apps/inventory/models.py:268 templates/inventory/offcut_form.html:70
 msgid "Eni (mm)"
 msgstr "Width (mm)"
 
-#: apps/inventory/forms.py:258
+#: apps/inventory/forms.py:258 templates/inventory/offcut_form.html:71
 msgid "Soni (dona)"
 msgstr "Quantity (pcs)"
 
@@ -136,7 +137,6 @@ msgid "Ishchi"
 msgstr "Worker"
 
 #: apps/inventory/forms.py:298 apps/inventory/forms.py:301 apps/inventory/forms.py:291 apps/inventory/forms.py:294
-#: templates/inventory/offcut_form.html:77
 msgid "Barchasi"
 msgstr "All"
 
@@ -154,7 +154,7 @@ msgstr "Enter the month as YYYY-MM."
 
 #: apps/inventory/forms.py:46 apps/inventory/forms.py:294 apps/inventory/models.py:134 apps/inventory/views.py:454
 #: templates/inventory/dashboard.html:83 templates/inventory/home.html:87 templates/inventory/home.html:262 templates/inventory/material_list.html:35
-#: templates/inventory/material_list.html:59
+#: templates/inventory/material_list.html:59 templates/inventory/offcut_form.html:198
 msgid "Kategoriya"
 msgstr "Category"
 
@@ -276,7 +276,7 @@ msgctxt "category"
 msgid "Furnitura"
 msgstr "Hardware"
 
-#: apps/inventory/models.py:269 templates/inventory/home.html:264 templates/inventory/offcut_form.html:68 templates/inventory/offcut_form.html:88
+#: apps/inventory/models.py:269 templates/inventory/home.html:264 templates/inventory/offcut_form.html:200
 msgid "Soni"
 msgstr "Quantity"
 
@@ -907,12 +907,12 @@ msgid "Yopish"
 msgstr "Close"
 
 #: templates/inventory/_txn_rows.html:10 templates/inventory/dashboard.html:82 templates/inventory/home.html:86 templates/inventory/home.html:261
-#: templates/inventory/material_list.html:58 templates/inventory/offcut_form.html:86
+#: templates/inventory/material_list.html:58 templates/inventory/offcut_form.html:197
 msgid "Material nomi"
 msgstr "Material name"
 
 #: templates/inventory/_txn_rows.html:11 templates/inventory/home.html:88 templates/inventory/home.html:263 templates/inventory/material_list.html:60
-#: templates/inventory/offcut_form.html:87
+#: templates/inventory/offcut_form.html:199
 msgid "O'lchami"
 msgstr "Dimensions"
 
@@ -930,16 +930,16 @@ msgstr "offcut"
 
 #: templates/inventory/_txn_rows.html:51 templates/inventory/home.html:118 templates/inventory/home.html:193 templates/inventory/home.html:286
 #: templates/inventory/home.html:322 templates/inventory/material_list.html:88 templates/inventory/material_list.html:167 templates/inventory/offcut_form.html:6
-#: templates/inventory/offcut_form.html:101
+#: templates/inventory/offcut_form.html:225
 msgid "mm"
 msgstr "mm"
 
 #: templates/inventory/_txn_rows.html:70 templates/inventory/_txn_rows.html:132 templates/inventory/dashboard.html:172 templates/inventory/home.html:289
-#: templates/inventory/home.html:322 templates/inventory/offcut_form.html:6 templates/inventory/offcut_form.html:104 templates/inventory/withdraw_offcut.html:17
+#: templates/inventory/home.html:322 templates/inventory/offcut_form.html:6 templates/inventory/offcut_form.html:230 templates/inventory/withdraw_offcut.html:17
 msgid "dona"
 msgstr "pcs"
 
-#: templates/inventory/_txn_rows.html:8 templates/inventory/home.html:267 templates/inventory/offcut_form.html:90
+#: templates/inventory/_txn_rows.html:8 templates/inventory/home.html:267 templates/inventory/offcut_form.html:203
 msgid "Vaqti"
 msgstr "Time"
 
@@ -1019,7 +1019,7 @@ msgstr[1] "<span class=\"num\">%(n)s</span> entries"
 msgid "Chiqim, %(month)s"
 msgstr "Stock out, %(month)s"
 
-#: templates/inventory/dashboard.html:40 templates/inventory/home.html:66
+#: templates/inventory/dashboard.html:40 templates/inventory/home.html:66 templates/inventory/offcut_form.html:37
 msgid "Qoldiqlar"
 msgstr "Offcuts"
 
@@ -1074,7 +1074,7 @@ msgid "Holati"
 msgstr "Status"
 
 #: templates/inventory/dashboard.html:88 templates/inventory/home.html:97 templates/inventory/home.html:268 templates/inventory/material_list.html:66
-#: templates/users/pending_users.html:30 templates/users/user_list.html:56
+#: templates/inventory/offcut_form.html:75 templates/inventory/offcut_form.html:204 templates/users/pending_users.html:30 templates/users/user_list.html:56
 msgid "Amal"
 msgstr "Action"
 
@@ -1118,6 +1118,7 @@ msgid "Yetarli"
 msgstr "In stock"
 
 #: templates/inventory/home.html:169 templates/inventory/home.html:220 templates/inventory/home.html:302 templates/inventory/home.html:327
+#: templates/inventory/offcut_form.html:251
 msgid "Ishchi oladi"
 msgstr "Worker takes"
 
@@ -1127,6 +1128,7 @@ msgid "%(name)s — oldim"
 msgstr "Take %(name)s"
 
 #: templates/inventory/home.html:172 templates/inventory/home.html:223 templates/inventory/home.html:305 templates/inventory/home.html:330
+#: templates/inventory/offcut_form.html:255 templates/inventory/offcut_form.html:277
 msgid "Oldim"
 msgstr "Take"
 
@@ -1159,28 +1161,28 @@ msgstr "Materials appear here once an administrator adds them."
 msgid "Birinchi materialni qo'shing"
 msgstr "Add the first material"
 
-#: templates/inventory/home.html:248
+#: templates/inventory/home.html:248 templates/inventory/offcut_form.html:185
 msgid "Qoldiq materiallar"
 msgstr "Offcuts"
 
-#: templates/inventory/home.html:251
+#: templates/inventory/home.html:251 templates/inventory/offcut_form.html:188
 msgid "Kesishdan qolgan, qayta ishlatsa bo'ladigan bo'laklar · rasm list o'lchamiga nisbatan"
 msgstr "Reusable pieces left over from cutting · drawn to scale against the sheet"
 
-#: templates/inventory/home.html:260
+#: templates/inventory/home.html:260 templates/inventory/offcut_form.html:73
 msgid "Ko'rinishi"
 msgstr "Preview"
 
-#: templates/inventory/home.html:265 templates/inventory/offcut_form.html:89
+#: templates/inventory/home.html:265 templates/inventory/offcut_form.html:72 templates/inventory/offcut_form.html:201
 msgid "Joylashuvi / Izoh"
 msgstr "Location / Notes"
 
-#: templates/inventory/home.html:266
+#: templates/inventory/home.html:266 templates/inventory/offcut_form.html:202
 msgid "Kim qo'shgan"
 msgstr "Added by"
 
-#: templates/inventory/home.html:29 templates/inventory/home.html:341 templates/inventory/offcut_form.html:3 templates/inventory/offcut_form.html:27
-#: templates/partials/nav.html:3
+#: templates/inventory/home.html:29 templates/inventory/home.html:341 templates/inventory/offcut_form.html:3 templates/inventory/offcut_form.html:33
+#: templates/inventory/offcut_form.html:57 templates/partials/nav.html:3
 msgid "Qoldiq qo'shish"
 msgstr "Add offcut"
 
@@ -1189,7 +1191,7 @@ msgstr "Add offcut"
 msgid "%(name)s %(length)s×%(width)s — oldim"
 msgstr "Take %(name)s %(length)s×%(width)s"
 
-#: templates/inventory/home.html:340 templates/inventory/offcut_form.html:134
+#: templates/inventory/home.html:340 templates/inventory/offcut_form.html:287
 msgid "Hozircha qoldiq yo'q."
 msgstr "No offcuts yet."
 
@@ -1410,65 +1412,37 @@ msgid_plural "jami <span class=\"num\">%(n)s</span> ta yozuv"
 msgstr[0] "<span class=\"num\">%(n)s</span> entry in total"
 msgstr[1] "<span class=\"num\">%(n)s</span> entries in total"
 
-#: templates/inventory/offcut_form.html:28
-msgid "Kesishdan qolgan, yana ishlatsa bo'ladigan bo'lakni yozib qo'ying."
-msgstr "Record a piece left over from cutting that can be used again."
-
-#: templates/inventory/offcut_form.html:32
-msgid "Kasbingiz uchun qoldiq yoziladigan material yo'q."
-msgstr "There are no materials with offcut tracking for your trade."
-
-#: templates/inventory/offcut_form.html:33
-msgid "Qoldiq faqat list va lenta materiallar uchun yoziladi."
-msgstr "Offcuts are recorded only for sheet materials and tapes."
-
-#: templates/inventory/offcut_form.html:47
+#: templates/inventory/offcut_form.html:122 templates/inventory/offcut_form.html:162
 msgid "Bo'lak to'liq listdan katta bo'lishi mumkin emas"
 msgstr "A piece can't be larger than the full sheet"
 
-#: templates/inventory/offcut_form.html:50
+#: templates/inventory/offcut_form.html:147 templates/inventory/offcut_form.html:176
 msgid "Qoldiqni saqlash"
 msgstr "Save offcut"
 
-#: templates/inventory/offcut_form.html:53
-msgid "Qoldiq ko'rinishi"
-msgstr "Offcut preview"
+#: templates/inventory/offcut_form.html:34 templates/inventory/offcut_form.html:60
+msgid "Kesishdan qolgan, yana ishlatsa bo'ladigan bo'lakni yozib qo'ying."
+msgstr "Record a piece left over from cutting that can be used again."
 
-#: templates/inventory/offcut_form.html:54
-msgid "Listga nisbatan"
-msgstr "Against the sheet"
+#: templates/inventory/offcut_form.html:43
+msgid "Kasbingiz uchun qoldiq yoziladigan material yo'q."
+msgstr "There are no materials with offcut tracking for your trade."
 
-#: templates/inventory/offcut_form.html:55
-msgid "To'liq list:"
-msgstr "Full sheet:"
-
-#: templates/inventory/offcut_form.html:56
-msgid "Bu material uchun list o'lchami kiritilmagan."
-msgstr "No sheet size is set for this material."
-
-#: templates/inventory/offcut_form.html:58
-msgid "Qoldiq bo'lagi to'liq list ichida"
-msgstr "Offcut piece within the full sheet"
+#: templates/inventory/offcut_form.html:44
+msgid "Qoldiq faqat list va lenta materiallar uchun yoziladi."
+msgstr "Offcuts are recorded only for sheet materials and tapes."
 
 #: templates/inventory/offcut_form.html:6
 msgid "m²"
 msgstr "m²"
 
-#: templates/inventory/offcut_form.html:65
-msgid "Bo'lak"
-msgstr "Piece"
-
-#: templates/inventory/offcut_form.html:66
+#: templates/inventory/offcut_form.html:74
 msgid "Maydoni"
 msgstr "Area"
 
-#: templates/inventory/offcut_form.html:67
-msgid "List ulushi"
-msgstr "Share of sheet"
-
-#: templates/inventory/offcut_form.html:76
-msgid "Oxirgi qoldiqlar"
-msgstr "Recent offcuts"
+#: templates/inventory/offcut_form.html:86 templates/inventory/offcut_form.html:173
+msgid "To'liq list:"
+msgstr "Full sheet:"
 
 #: templates/inventory/reports.html:11
 msgid "CSV yuklab olish"
