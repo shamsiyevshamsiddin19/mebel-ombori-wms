@@ -1,35 +1,38 @@
 {% load wms i18n %}{# Ledger rows. Expects `transactions`; `show_user` and `show_price` flags. #}
 
-{# Desktop Table #}
+{# Desktop Table (Excel-like ERP Data Grid) #}
 <div class="hidden md:block overflow-x-auto">
-  <table class="w-full border-collapse text-left" style="font-size: 13.5px;">
+  <table class="grid-table">
     <thead>
-      <tr class="border-b border-line bg-raised/50 text-[11px] font-semibold uppercase tracking-wider text-muted">
-        <th class="px-5 py-3 text-left font-semibold">{% translate "Vaqti" %}</th>
-        <th class="px-4 py-3 text-left font-semibold">{% translate "Turi" %}</th>
-        <th class="px-4 py-3 text-left font-semibold">{% translate "Material nomi" %}</th>
-        <th class="px-4 py-3 text-left font-semibold">{% translate "O'lchami" %}</th>
+      <tr>
+        <th class="w-[170px] min-w-[160px] text-left">{% translate "Vaqti" %}</th>
+        <th class="w-[150px] min-w-[140px] text-left">{% translate "Turi" %}</th>
+        <th class="min-w-[220px] text-left">{% translate "Material nomi" %}</th>
+        <th class="w-[140px] min-w-[120px] text-left">{% translate "O'lchami" %}</th>
         {% if show_user %}
-          <th class="px-4 py-3 text-left font-semibold">{% translate "Ishchi" %}</th>
+          <th class="w-[160px] min-w-[140px] text-left">{% translate "Ishchi" %}</th>
         {% endif %}
-        <th class="px-4 py-3 text-right font-semibold">{% translate "Miqdor" %}</th>
+        <th class="w-[140px] min-w-[120px] text-right">{% translate "Miqdor" %}</th>
         {% if show_price %}
-          <th class="px-4 py-3 text-right font-semibold">{% translate "Birlik narxi" %}</th>
-          <th class="px-5 py-3 text-right font-semibold">{% translate "Jami" %}</th>
+          <th class="w-[130px] min-w-[110px] text-right">{% translate "Birlik narxi" %}</th>
+          <th class="w-[140px] min-w-[120px] text-right">{% translate "Jami" %}</th>
         {% endif %}
-        <th class="px-4 py-3 text-left font-semibold">{% translate "Izoh" %}</th>
+        <th class="min-w-[200px] text-left">{% translate "Izoh" %}</th>
       </tr>
     </thead>
-    <tbody class="divide-y divide-rule bg-surface">
+    <tbody>
       {% for t in transactions %}
-      <tr class="hover:bg-raised/40 transition-colors">
+      <tr>
         {# 1. Vaqti #}
-        <td class="px-5 py-3.5 whitespace-nowrap text-xs text-muted">
-          {{ t.created_at|date:"j E, H:i" }}
+        <td class="whitespace-nowrap text-xs text-muted font-mono">
+          <span class="inline-flex items-center gap-1.5">
+            {% icon "clock" 13 "text-muted flex-none" %}
+            <span>{{ t.created_at|date:"j E, H:i" }}</span>
+          </span>
         </td>
 
         {# 2. Turi #}
-        <td class="px-4 py-3.5 whitespace-nowrap">
+        <td class="whitespace-nowrap">
           {% if t.transaction_type == "KIRIM" %}
             <span class="pill pill-accent text-xs">{% translate "Kirim" %}</span>
           {% elif t.transaction_type == "CHIQIM" %}
@@ -40,29 +43,29 @@
         </td>
 
         {# 3. Material nomi #}
-        <td class="px-4 py-3.5 font-medium text-ink">
+        <td class="font-medium text-ink">
           <span class="block text-[14px] leading-snug">{{ t.material.name }}</span>
         </td>
 
         {# 4. O'lchami #}
-        <td class="px-4 py-3.5 whitespace-nowrap">
+        <td class="whitespace-nowrap font-mono text-xs">
           {% if t.is_offcut %}
-            <span class="num font-mono text-xs text-ink">{{ t.offcut_length_mm }} × {{ t.offcut_width_mm }}</span>
-            <span class="text-xs text-muted">{% translate "mm" %}</span>
+            <span class="font-semibold text-ink">{{ t.offcut_length_mm }} × {{ t.offcut_width_mm }}</span>
+            <span class="text-muted">mm</span>
           {% else %}
-            <span class="text-muted">—</span>
+            <span class="text-muted/60">—</span>
           {% endif %}
         </td>
 
         {# 5. Ishchi (show_user) #}
         {% if show_user %}
-        <td class="px-4 py-3.5 whitespace-nowrap text-xs text-ink">
+        <td class="whitespace-nowrap text-xs text-ink">
           {{ t.user.display_name }}
         </td>
         {% endif %}
 
         {# 6. Miqdor #}
-        <td class="px-4 py-3.5 text-right whitespace-nowrap font-mono text-[13.5px]">
+        <td class="text-right whitespace-nowrap font-mono text-[13.5px]">
           <span class="font-semibold {% if t.quantity_changed > 0 %}text-accent{% else %}text-ink{% endif %}">
             {% if t.quantity_changed > 0 %}+{% else %}−{% endif %}{{ t.quantity_changed|absval|qty }}
           </span>
@@ -73,16 +76,16 @@
 
         {# 7. Narxlar (show_price) #}
         {% if show_price %}
-        <td class="px-4 py-3.5 text-right whitespace-nowrap font-mono text-xs text-muted">
+        <td class="text-right whitespace-nowrap font-mono text-xs text-muted">
           {% if t.unit_price_usd %}{{ t.unit_price_usd|usd:4 }}{% else %}—{% endif %}
         </td>
-        <td class="px-5 py-3.5 text-right whitespace-nowrap font-mono text-[13.5px] font-semibold text-ink">
+        <td class="text-right whitespace-nowrap font-mono text-[13.5px] font-semibold text-ink">
           {% if t.total_price_usd %}{{ t.total_price_usd|usd }}{% else %}<span class="text-muted font-normal">—</span>{% endif %}
         </td>
         {% endif %}
 
         {# 8. Izoh #}
-        <td class="px-4 py-3.5 text-xs text-muted max-w-[200px] truncate" title="{{ t.notes|default:'' }}">
+        <td class="text-xs text-muted" title="{{ t.notes|default:'' }}">
           {{ t.notes|default:"—" }}
         </td>
       </tr>

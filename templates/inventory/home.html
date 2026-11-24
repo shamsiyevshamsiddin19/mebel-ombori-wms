@@ -80,24 +80,24 @@
       {% if whole_stock %}
       {# Desktop Table #}
       <div class="hidden md:block overflow-x-auto">
-        <table class="w-full border-collapse text-left" style="font-size: 13.5px;">
+        <table class="grid-table">
           <thead>
-            <tr class="border-b border-line bg-raised/50 text-[11px] font-semibold uppercase tracking-wider text-muted">
-              <th class="px-5 py-3 text-left font-semibold">{% translate "Material nomi" %}</th>
-              <th class="px-4 py-3 text-left font-semibold">{% translate "Kategoriya" %}</th>
-              <th class="px-4 py-3 text-left font-semibold">{% translate "O'lchami" %}</th>
-              <th class="px-4 py-3 text-right font-semibold">{% translate "Omborda" %}</th>
-              <th class="px-3 py-3 text-left font-semibold">{% translate "Birlik" %}</th>
-              <th class="px-4 py-3 text-right font-semibold">{% translate "Idish / Qadoq" %}</th>
-              <th class="px-4 py-3 text-right font-semibold">{% translate "Minimal" %}</th>
+            <tr>
+              <th class="min-w-[220px] text-left">{% translate "Material nomi" %}</th>
+              <th class="w-[140px] min-w-[120px] text-left">{% translate "Kategoriya" %}</th>
+              <th class="w-[140px] min-w-[120px] text-left">{% translate "O'lchami" %}</th>
+              <th class="w-[130px] min-w-[110px] text-right">{% translate "Omborda" %}</th>
+              <th class="w-[80px] min-w-[70px] text-left">{% translate "Birlik" %}</th>
+              <th class="w-[140px] min-w-[120px] text-right">{% translate "Idish / Qadoq" %}</th>
+              <th class="w-[130px] min-w-[110px] text-right">{% translate "Minimal" %}</th>
               {% if user.is_warehouse_admin %}
-              <th class="px-5 py-3 text-right font-semibold">{% translate "Qiymati" %}</th>
+              <th class="w-[140px] min-w-[120px] text-right">{% translate "Qiymati" %}</th>
               {% endif %}
-              <th class="px-4 py-3 text-center font-semibold">{% translate "Holati" %}</th>
-              <th class="px-5 py-3 text-right font-semibold">{% translate "Amal" %}</th>
+              <th class="w-[120px] min-w-[100px] text-center">{% translate "Holati" %}</th>
+              <th class="w-[120px] min-w-[110px] text-right">{% translate "Amal" %}</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-rule bg-surface">
+          <tbody>
             {% for stock in whole_stock %}{% with m=stock.material %}
             <tr class="hover:bg-raised/40 transition-colors">
               {# 1. Material nomi #}
@@ -254,21 +254,21 @@
       {% if offcuts %}
       {# Desktop Offcut Table #}
       <div class="hidden md:block overflow-x-auto">
-        <table class="w-full border-collapse text-left" style="font-size: 13.5px;">
+        <table class="grid-table">
           <thead>
-            <tr class="border-b border-line bg-raised/50 text-[11px] font-semibold uppercase tracking-wider text-muted">
-              <th class="px-4 py-3 text-center w-16 font-semibold">{% translate "Ko'rinishi" %}</th>
-              <th class="px-5 py-3 text-left font-semibold">{% translate "Material nomi" %}</th>
-              <th class="px-4 py-3 text-left font-semibold">{% translate "Kategoriya" %}</th>
-              <th class="px-4 py-3 text-left font-semibold">{% translate "O'lchami" %}</th>
-              <th class="px-4 py-3 text-right font-semibold">{% translate "Soni" %}</th>
-              <th class="px-4 py-3 text-left font-semibold">{% translate "Joylashuvi / Izoh" %}</th>
-              <th class="px-4 py-3 text-left font-semibold">{% translate "Kim qo'shgan" %}</th>
-              <th class="px-4 py-3 text-left font-semibold">{% translate "Vaqti" %}</th>
-              <th class="px-5 py-3 text-right font-semibold">{% translate "Amal" %}</th>
+            <tr>
+              <th class="w-[90px] min-w-[90px] text-center">{% translate "Ko'rinishi" %}</th>
+              <th class="min-w-[220px] text-left">{% translate "Material nomi" %}</th>
+              <th class="w-[140px] min-w-[120px] text-left">{% translate "Kategoriya" %}</th>
+              <th class="w-[140px] min-w-[120px] text-left">{% translate "O'lchami" %}</th>
+              <th class="w-[120px] min-w-[100px] text-right">{% translate "Soni" %}</th>
+              <th class="min-w-[180px] text-left">{% translate "Joylashuvi / Izoh" %}</th>
+              <th class="w-[160px] min-w-[140px] text-left">{% translate "Kim qo'shgan" %}</th>
+              <th class="w-[150px] min-w-[130px] text-left">{% translate "Vaqti" %}</th>
+              <th class="w-[120px] min-w-[110px] text-right">{% translate "Amal" %}</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-rule bg-surface">
+          <tbody>
             {% for offcut in offcuts %}{% with m=offcut.material %}
             <tr class="hover:bg-raised/40 transition-colors">
               <td class="px-4 py-3 text-center">

@@ -2,17 +2,40 @@
 {% load wms i18n %}
 {% block title %}{% translate "Mening tarixim" %}{% endblock %}
 {% block content %}
-<h1 class="font-bold text-[24px] leading-8 lg:text-[32px] lg:leading-10">{% translate "Mening tarixim" %}</h1>
-<p class="mt-1 text-muted" style="font-size:15px">{% translate "Siz olgan materiallar va qo'shgan qoldiqlar" %} · {% blocktranslate count n=page_obj.paginator.count|default:0 %}jami <span class="num">{{ n }}</span> ta yozuv{% plural %}jami <span class="num">{{ n }}</span> ta yozuv{% endblocktranslate %}</p>
+<div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+  <div>
+    <h1 class="font-bold text-[24px] leading-8 lg:text-[30px] lg:leading-9 text-ink">{% translate "Mening tarixim" %}</h1>
+    <p class="mt-0.5 text-muted" style="font-size:14px">
+      {% translate "Siz olgan materiallar va qo'shgan qoldiqlar" %} · {% blocktranslate count n=page_obj.paginator.count|default:0 %}jami <span class="num">{{ n }}</span> ta yozuv{% plural %}jami <span class="num">{{ n }}</span> ta yozuv{% endblocktranslate %}
+    </p>
+  </div>
+  <a href="{% url 'inventory:home' %}" class="btn btn-secondary min-h-10 px-3.5 text-xs font-medium">
+    {% icon "back" 14 %} {% translate "Ombor" %}
+  </a>
+</div>
 
-<div class="panel mt-6 overflow-hidden shadow-xs">
+<div class="panel mt-5 overflow-hidden shadow-xs">
+  <div class="panel-head border-b border-line px-5 py-3.5 flex items-center justify-between bg-surface">
+    <div class="flex items-center gap-2.5">
+      <h2 class="font-semibold text-ink text-[15px]">{% translate "Barcha harakatlar" %}</h2>
+      <span class="pill pill-accent text-xs">Excel / Grid</span>
+      {% if page_obj.paginator.count %}
+        <span class="pill pill-neutral font-medium">{{ page_obj.paginator.count }}</span>
+      {% endif %}
+    </div>
+    <span class="text-xs text-muted">{% translate "Siz olgan materiallar va qo'shgan qoldiqlar" %}</span>
+  </div>
+
   {% if transactions %}
     {% include "inventory/_txn_rows.html" with show_user=False show_price=False %}
     {% include "partials/pagination.html" %}
   {% else %}
-    <div class="px-5 py-8">
-      <p class="font-medium">{% translate "Hali yozuv yo'q." %}</p>
-      <p class="mt-1 text-muted">{% translate "Ombordan material olganingizda yoki qoldiq qo'shganingizda shu yerda ko'rinadi." %} <a class="font-medium text-ink underline underline-offset-4" href="{% url 'inventory:home' %}">{% translate "Omborga o'tish" %}</a></p>
+    <div class="px-5 py-8 text-center text-muted text-sm">
+      <p class="font-medium text-ink">{% translate "Hali yozuv yo'q." %}</p>
+      <p class="mt-1 text-muted text-xs">
+        {% translate "Ombordan material olganingizda yoki qoldiq qo'shganingizda shu yerda ko'rinadi." %}
+        <a class="font-medium text-ink underline underline-offset-4" href="{% url 'inventory:home' %}">{% translate "Omborga o'tish" %}</a>
+      </p>
     </div>
   {% endif %}
 </div>

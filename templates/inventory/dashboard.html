@@ -76,19 +76,19 @@
       {% if low_stock %}
       {# Desktop Table #}
       <div class="hidden md:block overflow-x-auto">
-        <table class="w-full border-collapse text-left" style="font-size: 13.5px;">
+        <table class="grid-table">
           <thead>
-            <tr class="border-b border-line bg-raised/50 text-[11px] font-semibold uppercase tracking-wider text-muted">
-              <th class="px-5 py-3 text-left font-semibold">{% translate "Material nomi" %}</th>
-              <th class="px-4 py-3 text-left font-semibold">{% translate "Kategoriya" %}</th>
-              <th class="px-4 py-3 text-right font-semibold">{% translate "Omborda" %}</th>
-              <th class="px-4 py-3 text-right font-semibold">{% translate "Minimal" %}</th>
-              <th class="px-4 py-3 text-right font-semibold">{% translate "Farq" %}</th>
-              <th class="px-4 py-3 text-center font-semibold w-[140px]">{% translate "Holati" %}</th>
-              <th class="px-5 py-3 text-right font-semibold">{% translate "Amal" %}</th>
+            <tr>
+              <th class="min-w-[220px] text-left">{% translate "Material nomi" %}</th>
+              <th class="w-[140px] min-w-[120px] text-left">{% translate "Kategoriya" %}</th>
+              <th class="w-[130px] min-w-[110px] text-right">{% translate "Omborda" %}</th>
+              <th class="w-[130px] min-w-[110px] text-right">{% translate "Minimal" %}</th>
+              <th class="w-[130px] min-w-[110px] text-right">{% translate "Farq" %}</th>
+              <th class="w-[140px] min-w-[120px] text-center">{% translate "Holati" %}</th>
+              <th class="w-[120px] min-w-[110px] text-right">{% translate "Amal" %}</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-rule bg-surface">
+          <tbody>
             {% for stock in low_stock %}{% with m=stock.material %}
             <tr class="hover:bg-raised/40 transition-colors">
               <td class="px-5 py-3.5 font-medium text-ink">

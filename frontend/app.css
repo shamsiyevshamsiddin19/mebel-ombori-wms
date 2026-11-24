@@ -170,6 +170,31 @@
   .data-table .num { text-align: right; font-variant-numeric: tabular-nums; }
   .data-table tbody tr:hover td { background: #fcfcfd; }
 
+  /* Excel / ERP Data Grid */
+  .grid-table {
+    @apply w-full border-collapse text-left;
+    font-size: 13.5px;
+    border-top: 1px solid var(--color-line);
+  }
+  .grid-table thead tr {
+    @apply border-b border-line bg-raised/80 text-[11px] font-semibold uppercase tracking-wider text-muted;
+  }
+  .grid-table th {
+    @apply border-r border-line/70 px-4 py-2.5 font-semibold text-muted last:border-r-0 select-none;
+  }
+  .grid-table tbody tr {
+    @apply border-b border-line/50 transition-colors;
+  }
+  .grid-table tbody tr:nth-child(even) {
+    background-color: rgba(243, 244, 246, 0.45);
+  }
+  .grid-table tbody tr:hover {
+    background-color: rgba(154, 91, 34, 0.05);
+  }
+  .grid-table td {
+    @apply border-r border-line/50 px-4 py-3 align-middle last:border-r-0;
+  }
+
   /* Navigation */
   .nav-item { @apply flex items-center gap-2.5 rounded-[6px] px-2.5 text-ink; height: 36px; }
   .nav-item svg { width: 16px; height: 16px; color: var(--color-muted); flex: none; }

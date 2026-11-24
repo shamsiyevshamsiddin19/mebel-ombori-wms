@@ -45,18 +45,18 @@
   {% if users %}
   {# Desktop Table (Excel-like ERP Data Grid) #}
   <div class="hidden md:block overflow-x-auto">
-    <table class="w-full border-collapse text-left" style="font-size: 13.5px;">
+    <table class="grid-table">
       <thead>
-        <tr class="border-b border-line bg-raised/50 text-[11px] font-semibold uppercase tracking-wider text-muted">
-          <th class="px-5 py-3 text-left font-semibold">{% translate "Telefon raqami" %}</th>
-          <th class="px-5 py-3 text-left font-semibold">{% translate "Ishchi" %}</th>
-          <th class="px-4 py-3 text-left font-semibold">{% translate "Kasblari" %}</th>
-          <th class="px-4 py-3 text-left font-semibold">{% translate "Parol" %}</th>
-          <th class="px-4 py-3 text-center font-semibold">{% translate "Holati" %}</th>
-          <th class="px-5 py-3 text-right font-semibold">{% translate "Amal" %}</th>
+        <tr>
+          <th class="w-[180px] min-w-[160px] text-left">{% translate "Telefon raqami" %}</th>
+          <th class="min-w-[220px] text-left">{% translate "Ishchi" %}</th>
+          <th class="min-w-[220px] text-left">{% translate "Kasblari" %}</th>
+          <th class="w-[160px] min-w-[140px] text-left">{% translate "Parol" %}</th>
+          <th class="w-[120px] min-w-[100px] text-center">{% translate "Holati" %}</th>
+          <th class="w-[130px] min-w-[110px] text-right">{% translate "Amal" %}</th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-rule bg-surface">
+      <tbody>
         {% for u in users %}
         <tr class="hover:bg-raised/40 transition-colors" x-data="{ show: false }">
           {# 1. Telefon raqami #}

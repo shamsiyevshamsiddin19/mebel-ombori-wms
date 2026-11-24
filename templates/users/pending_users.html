@@ -20,17 +20,17 @@
   {% if pending_users %}
   {# Desktop Table #}
   <div class="hidden md:block overflow-x-auto">
-    <table class="w-full border-collapse text-left" style="font-size: 13.5px;">
+    <table class="grid-table">
       <thead>
-        <tr class="border-b border-line bg-raised/50 text-[11px] font-semibold uppercase tracking-wider text-muted">
-          <th class="px-5 py-3 text-left font-semibold">{% translate "Ishchi" %}</th>
-          <th class="px-5 py-3 text-left font-semibold">{% translate "Telefon raqami" %}</th>
-          <th class="px-4 py-3 text-left font-semibold">{% translate "Tanlagan kasbi" %}</th>
-          <th class="px-4 py-3 text-right font-semibold">{% translate "Yuborilgan sana" %}</th>
-          <th class="px-5 py-3 text-right font-semibold">{% translate "Amal" %}</th>
+        <tr>
+          <th class="min-w-[220px] text-left">{% translate "Ishchi" %}</th>
+          <th class="w-[180px] min-w-[160px] text-left">{% translate "Telefon raqami" %}</th>
+          <th class="min-w-[220px] text-left">{% translate "Tanlagan kasbi" %}</th>
+          <th class="w-[180px] min-w-[160px] text-right">{% translate "Yuborilgan sana" %}</th>
+          <th class="w-[140px] min-w-[120px] text-right">{% translate "Amal" %}</th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-rule bg-surface">
+      <tbody>
         {% for p in pending_users %}
         <tr class="hover:bg-raised/40 transition-colors">
           <td class="px-5 py-3.5 font-medium text-ink">
