@@ -24,14 +24,6 @@
     <nav class="flex-1 overflow-y-auto px-3 py-4" aria-label="{% translate 'Asosiy menyu' %}">
       {% include "partials/nav.html" %}
     </nav>
-    <div class="flex-none border-t border-line px-5 py-4">
-      <p class="truncate font-medium">{{ user.display_name }}</p>
-      <p class="truncate text-muted" style="font-size:12px">{% for r in user.roles %}{{ r|short_role }}{% if not forloop.last %}, {% endif %}{% empty %}{% translate "Rol yo'q" %}{% endfor %}</p>
-      <div class="mt-3">{% include "partials/lang_switch.html" %}</div>
-      <form method="post" action="{% url 'users:logout' %}" class="mt-2">{% csrf_token %}
-        <button type="submit" class="btn btn-ghost -ml-3.5 text-muted">{% icon "logout" %} {% translate "Chiqish" %}</button>
-      </form>
-    </div>
   </aside>
 
   <div class="flex min-w-0 flex-col">
@@ -48,12 +40,76 @@
             <span class="num font-semibold">{{ nav_valuation_usd|usd }}</span>
           </a>
         {% endif %}
-        <div class="hidden h-full items-center gap-3 border-l border-line pl-4 lg:flex">
-          <div class="text-right leading-tight">
-            <p class="font-medium">{{ user.display_name }}</p>
-            <p class="text-muted" style="font-size:12px">{% for r in user.roles %}{{ r|short_role }}{% if not forloop.last %} · {% endif %}{% endfor %}</p>
+
+        {# ---- User profile dropdown (desktop) ---- #}
+        <div class="relative hidden h-full items-center border-l border-line pl-3 lg:flex" x-data="{ userMenu: false }">
+          <button type="button"
+                  @click="userMenu = !userMenu"
+                  @keydown.escape.window="userMenu = false"
+                  class="flex items-center gap-2.5 rounded-lg py-1.5 pl-2.5 pr-2 transition-colors hover:bg-raised select-none cursor-pointer border border-transparent hover:border-line/60"
+                  :class="{ 'bg-raised border-line/60': userMenu }"
+                  aria-haspopup="true"
+                  :aria-expanded="userMenu">
+            <div class="text-right leading-tight">
+              <p class="font-medium text-ink text-sm leading-snug">{{ user.display_name }}</p>
+              <p class="text-muted text-[11px] leading-snug">
+                {% for r in user.roles %}{{ r|short_role }}{% if not forloop.last %} · {% endif %}{% empty %}{% translate "Rol yo'q" %}{% endfor %}
+              </p>
+            </div>
+            <span class="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-accent-soft text-xs font-bold text-accent-ink border border-accent/20 select-none">
+              {{ user.display_name|slice:":2"|upper }}
+            </span>
+            <svg class="h-3.5 w-3.5 text-muted transition-transform duration-200" :class="{ 'rotate-180': userMenu }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m6 9 6 6 6-6"/>
+            </svg>
+          </button>
+
+          {# Dropdown Popover Menu #}
+          <div x-show="userMenu"
+               x-cloak
+               @click.outside="userMenu = false"
+               x-transition:enter="transition ease-out duration-100"
+               x-transition:enter-start="transform opacity-0 scale-95"
+               x-transition:enter-end="transform opacity-100 scale-100"
+               x-transition:leave="transition ease-in duration-75"
+               x-transition:leave-start="transform opacity-100 scale-100"
+               x-transition:leave-end="transform opacity-0 scale-95"
+               class="absolute right-0 top-[calc(100%+8px)] w-64 rounded-xl border border-line bg-surface p-2 shadow-xl z-50">
+            
+            {# User info in popup #}
+            <div class="px-3 py-2.5 border-b border-line/60">
+              <p class="font-semibold text-ink text-sm truncate">{{ user.display_name }}</p>
+              <p class="text-xs text-muted mt-0.5 truncate">{{ user.phone_display }}</p>
+              <div class="mt-1.5 flex flex-wrap gap-1">
+                {% for r in user.roles %}
+                  <span class="inline-flex items-center rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-medium text-muted">
+                    {{ r|short_role }}
+                  </span>
+                {% empty %}
+                  <span class="text-[10px] text-muted">—</span>
+                {% endfor %}
+              </div>
+            </div>
+
+            {# Language selection #}
+            <div class="px-3 py-2.5">
+              <p class="text-[11px] font-semibold uppercase tracking-wider text-muted mb-1.5">{% translate "Til" %}</p>
+              {% include "partials/lang_switch.html" %}
+            </div>
+
+            <div class="border-t border-line/60 my-1"></div>
+
+            {# Logout action #}
+            <form method="post" action="{% url 'users:logout' %}">
+              {% csrf_token %}
+              <button type="submit" class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-semibold text-negative hover:bg-negative/10 transition-colors cursor-pointer">
+                {% icon "logout" 16 "text-negative flex-none" %}
+                <span>{% translate "Chiqish" %}</span>
+              </button>
+            </form>
           </div>
         </div>
+
         <button type="button" class="btn btn-ghost -mr-2 !px-2 lg:hidden" @click="menu = true" aria-label="{% translate 'Menyuni ochish' %}">{% icon "menu" 22 %}</button>
       </div>
     </header>

@@ -1,9 +1,14 @@
 {% load i18n %}{% get_current_language as current_lang %}{% get_available_languages as languages %}
 {# Interface language: UZ / RU / EN. Posts to Django's set_language, which stores a cookie. #}
-<form action="{% url 'set_language' %}" method="post" class="lang-switch" role="group" aria-label="{% translate 'Til' %}">{% csrf_token %}
+<form action="{% url 'set_language' %}" method="post" class="w-full" role="group" aria-label="{% translate 'Til' %}">{% csrf_token %}
   <input type="hidden" name="next" value="{{ request.get_full_path }}">
-  {% for code, name in languages %}
-    <button type="submit" name="language" value="{{ code }}" class="lang-option" lang="{{ code }}" title="{{ name }}"
-            aria-pressed="{% if code == current_lang %}true{% else %}false{% endif %}">{{ code|upper }}</button>
-  {% endfor %}
+  <div class="grid grid-cols-3 gap-1 rounded-lg border border-line/70 bg-raised/70 p-0.5 shadow-2xs">
+    {% for code, name in languages %}
+      <button type="submit" name="language" value="{{ code }}" lang="{{ code }}" title="{{ name }}"
+              class="flex items-center justify-center rounded-md py-1.5 text-xs font-semibold transition-all select-none {% if code|lower == current_lang|lower %}bg-surface text-ink shadow-2xs border border-line/60{% else %}text-muted hover:text-ink hover:bg-surface/40 font-medium{% endif %}"
+              aria-pressed="{% if code|lower == current_lang|lower %}true{% else %}false{% endif %}">
+        {{ code|upper }}
+      </button>
+    {% endfor %}
+  </div>
 </form>
