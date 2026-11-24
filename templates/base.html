@@ -140,11 +140,6 @@
           </a>
         {% endif %}
 
-        {# Desktop language switcher #}
-        <div class="hidden sm:flex items-center">
-          {% include "partials/lang_switch.html" %}
-        </div>
-
         {# ---- User profile dropdown (desktop) ---- #}
         <div class="relative hidden h-full items-center border-l border-line pl-3 lg:flex" x-data="{ userMenu: false }">
           <button type="button"
