@@ -50,19 +50,8 @@
     {% csrf_token %}
     {% include "partials/form_errors.html" %}
 
-    {# =================== UNIFIED EXCEL DATA GRID =================== #}
+    {# =================== UNIFIED DATA GRID =================== #}
     <div class="panel overflow-hidden shadow-xs">
-      <div class="panel-head border-b border-line px-5 py-3.5 flex flex-wrap items-center justify-between gap-2 bg-surface">
-        <div class="flex items-center gap-2.5">
-          <h2 class="font-semibold text-ink text-[16px]">{% translate "Qoldiq qo'shish" %}</h2>
-          <span class="pill pill-accent text-xs">Excel / Grid</span>
-          {% if recent_offcuts %}
-            <span class="pill pill-neutral font-medium">{{ recent_offcuts|length }}</span>
-          {% endif %}
-        </div>
-        <p class="text-xs text-muted">{% translate "Kesishdan qolgan, yana ishlatsa bo'ladigan bo'lakni yozib qo'ying." %}</p>
-      </div>
-
       {# Desktop Excel Table #}
       <div class="hidden md:block overflow-x-auto">
         <table class="grid-table">
