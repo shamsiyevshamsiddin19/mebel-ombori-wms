@@ -18,6 +18,7 @@ from unittest import mock
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
 
 from apps.inventory import services
@@ -72,44 +73,78 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--password", default=DEFAULT_DEMO_PASSWORD, help="Password for every demo account.")
         parser.add_argument("--force", action="store_true", help="Allow running with DJANGO_DEBUG off.")
+        parser.add_argument(
+            "--users-only", action="store_true", help="Only create or update demo users, skipping materials and history."
+        )
 
-    def handle(self, *args, password, force, **options):
+    def handle(self, *args, password, force, users_only=False, **options):
         if not settings.DEBUG and not force:
             raise CommandError("seed_demo is for local development. Use --force to run it with DEBUG off.")
-        if BaseMaterial.objects.exists():
+        if not users_only and BaseMaterial.objects.exists():
             raise CommandError("Materials already exist; demo data is only loaded into an empty database.")
-        self.rng = random.Random(2026)
         with transaction.atomic():
             users = self._users(password)
-            self._history(users)
-        self.stdout.write(self.style.SUCCESS(
-            f"Demo data loaded: {User.objects.count()} users, {BaseMaterial.objects.count()} materials, "
-            f"{LeftoverOffcut.objects.count()} offcuts."
-        ))
+            if not users_only:
+                self.rng = random.Random(2026)
+                self._history(users)
+
+        if users_only:
+            self.stdout.write(self.style.SUCCESS(f"Demo users loaded: {len(users)} users."))
+        else:
+            self.stdout.write(self.style.SUCCESS(
+                f"Demo data loaded: {User.objects.count()} users, {BaseMaterial.objects.count()} materials, "
+                f"{LeftoverOffcut.objects.count()} offcuts."
+            ))
         self.stdout.write("Log in with a phone number and the demo password:")
-        for user in User.objects.order_by("phone"):
-            self.stdout.write(f"  {user.phone_display:<22} {user.full_name}  ({', '.join(user.role_labels) or 'pending'})")
+        for user in User.objects.filter(phone__isnull=False).order_by("phone"):
+            status = "tasdiq kutmoqda" if not (user.is_superuser or user.is_approved) else (", ".join(user.role_labels) or "—")
+            self.stdout.write(f"  {user.phone_display:<22} {user.full_name:<20} {status}")
 
     # ------------------------------------------------------------------
     def _users(self, password):
         admin_phone = "+998900000001"
-        admin = User.objects.create_superuser(
-            admin_phone, password=password, full_name="Akmal Rustamov", phone=admin_phone
-        )
+        admin = User.objects.filter(
+            Q(phone=admin_phone) | Q(username=admin_phone) | Q(username="admin")
+        ).first()
+        if admin is None:
+            admin = User.objects.create_superuser(
+                admin_phone, password=password, full_name="Akmal Rustamov", phone=admin_phone
+            )
+        else:
+            admin.phone = admin_phone
+            admin.full_name = "Akmal Rustamov"
+            admin.is_superuser = True
+            admin.is_staff = True
+            admin.is_approved = True
+            admin.roles = [UserRole.ADMIN.value]
+            admin.set_password(password)
+            admin.save()
         users = {"admin": admin}
         for index, (username, full_name, roles, approved) in enumerate(WORKERS, start=2):
             phone = f"+99890000000{index}"
-            user = User(
-                username=phone,
-                phone=phone,
-                full_name=full_name,
-                roles=[str(r) for r in roles],
-                is_approved=approved,
-            )
+            user = User.objects.filter(
+                Q(phone=phone) | Q(username=phone) | Q(username=username)
+            ).first()
+            if user is None:
+                user = User(
+                    username=phone,
+                    phone=phone,
+                    full_name=full_name,
+                    roles=[str(r) for r in roles],
+                    is_approved=approved,
+                )
+            else:
+                user.phone = phone
+                user.full_name = full_name
+                user.roles = [str(r) for r in roles]
+                user.is_approved = approved
             user.set_password(password)
             user.save()
             if approved:
                 user.approved_by, user.approved_at = admin, timezone.now()
+                user.save(update_fields=["approved_by", "approved_at"])
+            else:
+                user.approved_by, user.approved_at = None, None
                 user.save(update_fields=["approved_by", "approved_at"])
             users[username] = user
         return users

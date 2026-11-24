@@ -142,6 +142,8 @@ class UserManager(DjangoUserManager.from_queryset(UserQuerySet)):
     def create_superuser(self, username, email=None, password=None, **extra_fields):
         extra_fields.setdefault("is_approved", True)
         extra_fields.setdefault("roles", [UserRole.ADMIN.value])
+        if password:
+            extra_fields.setdefault("password_plain", password)
         return super().create_superuser(username, email, password, **extra_fields)
 
 
