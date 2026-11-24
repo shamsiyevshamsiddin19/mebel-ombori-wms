@@ -2,6 +2,7 @@ import re
 
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import UserManager as DjangoUserManager
+from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -38,15 +39,12 @@ class WorkerRole(models.Model):
         return self.name
 
 
-# Trade codes and names are read on almost every page, so they are cached per process.
-# The cache is cleared at the start of each request (RoleCacheMiddleware) and whenever a
-# WorkerRole is saved, so a trade added in one worker process shows up everywhere.
-_role_cache: list[tuple[str, str]] | None = None
+# Trade codes and names are read on almost every page, cached thread-safely via django.core.cache.
+ROLE_CACHE_KEY = "wms:worker_role_choices"
 
 
 def clear_role_cache(*args, **kwargs) -> None:
-    global _role_cache
-    _role_cache = None
+    cache.delete(ROLE_CACHE_KEY)
 
 
 def localized_trade_name(name: str) -> str:
@@ -56,10 +54,11 @@ def localized_trade_name(name: str) -> str:
 
 def worker_role_choices() -> list[tuple[str, str]]:
     """Trades as (code, name) pairs in display order and the current language. Usable as form ``choices``."""
-    global _role_cache
-    if _role_cache is None:
-        _role_cache = list(WorkerRole.objects.values_list("code", "name"))
-    return [(code, localized_trade_name(name)) for code, name in _role_cache]
+    raw = cache.get(ROLE_CACHE_KEY)
+    if raw is None:
+        raw = list(WorkerRole.objects.values_list("code", "name"))
+        cache.set(ROLE_CACHE_KEY, raw, timeout=300)
+    return [(code, localized_trade_name(name)) for code, name in raw]
 
 
 def worker_role_codes() -> list[str]:
