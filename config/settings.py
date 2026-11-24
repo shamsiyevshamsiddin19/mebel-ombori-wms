@@ -218,7 +218,7 @@ REST_FRAMEWORK = {
 }
 
 # Branding shown in the header / page titles.
-WMS_BRAND_NAME = env("WMS_BRAND_NAME", "Mebel Ombori")
+WMS_BRAND_NAME = env("WMS_BRAND_NAME", "PROFUR")
 
 # ---------------------------------------------------------------------------
 # Security

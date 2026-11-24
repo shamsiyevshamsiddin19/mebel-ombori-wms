@@ -205,7 +205,7 @@
               {# 8. Amal #}
               <td class="px-5 py-3.5 text-right whitespace-nowrap">
                 {% if user.is_warehouse_admin %}
-                  <span class="pill pill-neutral text-xs">{% translate "Ishchi oladi" %}</span>
+                  <span class="pill pill-neutral text-xs text-muted">{% translate "Qoldiq" %}</span>
                 {% else %}
                   <a href="{% url 'inventory:offcut_withdraw' offcut.pk %}" class="btn btn-secondary min-h-8 px-2.5 text-xs font-medium">
                     {% icon "take" 14 %}

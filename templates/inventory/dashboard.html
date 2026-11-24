@@ -116,8 +116,9 @@
                 </div>
               </td>
               <td class="px-5 py-3.5 text-right whitespace-nowrap">
-                <a class="btn btn-secondary min-h-8 px-2.5 text-xs font-medium" href="{% url 'inventory:kirim' %}?material={{ m.pk }}">
-                  {% translate "Kirim" %}
+                <a class="btn btn-secondary min-h-8 px-2.5 text-xs font-medium inline-flex items-center gap-1" href="{% url 'inventory:kirim' %}?material={{ m.pk }}">
+                  {% icon "plus" 13 %}
+                  <span>{% translate "Kirim" %}</span>
                 </a>
               </td>
             </tr>
@@ -135,8 +136,9 @@
               <p class="font-medium text-ink text-[15px] truncate">{{ m.name }}</p>
               <p class="text-xs text-muted mt-0.5">{{ m.category|cat_label }}</p>
             </div>
-            <a class="btn btn-secondary min-h-8 px-2.5 text-xs font-medium" href="{% url 'inventory:kirim' %}?material={{ m.pk }}">
-              {% translate "Kirim" %}
+            <a class="btn btn-secondary min-h-8 px-2.5 text-xs font-medium inline-flex items-center gap-1" href="{% url 'inventory:kirim' %}?material={{ m.pk }}">
+              {% icon "plus" 13 %}
+              <span>{% translate "Kirim" %}</span>
             </a>
           </div>
           <div class="track mt-1" role="img" aria-label="{{ stock.quantity|qty }} / {{ m.minimum_threshold|qty }} {{ m.unit_short }}">

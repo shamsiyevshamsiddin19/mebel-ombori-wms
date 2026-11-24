@@ -203,7 +203,7 @@ class AdminDoesNotTakeStockTests(TestCase):
         response = self.client.get(reverse("inventory:home"))
         self.assertContains(response, "MDF 16 mm")
         self.assertNotContains(response, "Oldim")
-        self.assertContains(response, "Ishchi oladi")
+        self.assertContains(response, "Tahrirlash")
 
     def test_the_worker_still_sees_and_uses_oldim(self):
         self.client.force_login(self.worker)

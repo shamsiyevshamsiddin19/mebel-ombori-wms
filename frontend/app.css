@@ -129,6 +129,7 @@
   .pill-neutral { @apply bg-neutral-bg text-neutral-ink; }
   .pill-accent { @apply bg-raised text-ink font-semibold; }
   .pill-pos { @apply bg-pos-bg text-pos-ink; }
+  .text-positive { color: #16a34a !important; }
   .pill-neg { @apply bg-neg-bg text-neg-ink; }
   .pill-warn { @apply bg-warn-bg text-warn-ink; }
 

@@ -34,11 +34,11 @@
         {# 2. Turi #}
         <td class="whitespace-nowrap">
           {% if t.transaction_type == "KIRIM" %}
-            <span class="pill pill-accent text-xs">{% translate "Kirim" %}</span>
+            <span class="pill pill-pos text-xs">{% translate "Kirim" %}</span>
           {% elif t.transaction_type == "CHIQIM" %}
             <span class="pill pill-neutral text-xs">{% translate "Chiqim" %}{% if t.is_offcut %} · {% translate "qoldiq" %}{% endif %}</span>
           {% else %}
-            <span class="pill pill-pos text-xs">{% translate "Qoldiq qo'shildi" %}</span>
+            <span class="pill pill-neutral text-xs">{% translate "Qoldiq qo'shildi" %}</span>
           {% endif %}
         </td>
 
@@ -66,7 +66,7 @@
 
         {# 6. Miqdor #}
         <td class="text-right whitespace-nowrap font-mono text-[13.5px]">
-          <span class="font-semibold {% if t.quantity_changed > 0 %}text-accent{% else %}text-ink{% endif %}">
+          <span class="font-semibold {% if t.quantity_changed > 0 %}text-positive{% else %}text-ink{% endif %}">
             {% if t.quantity_changed > 0 %}+{% else %}−{% endif %}{{ t.quantity_changed|absval|qty }}
           </span>
           <span class="text-xs text-muted font-sans ml-1">
@@ -108,11 +108,11 @@
       </div>
       <div class="flex-none">
         {% if t.transaction_type == "KIRIM" %}
-          <span class="pill pill-accent text-xs">{% translate "Kirim" %}</span>
+          <span class="pill pill-pos text-xs">{% translate "Kirim" %}</span>
         {% elif t.transaction_type == "CHIQIM" %}
           <span class="pill pill-neutral text-xs">{% translate "Chiqim" %}{% if t.is_offcut %} · {% translate "qoldiq" %}{% endif %}</span>
         {% else %}
-          <span class="pill pill-pos text-xs">{% translate "Qoldiq qo'shildi" %}</span>
+          <span class="pill pill-neutral text-xs">{% translate "Qoldiq qo'shildi" %}</span>
         {% endif %}
       </div>
     </div>
@@ -128,7 +128,7 @@
         {% endif %}
       </div>
       <div class="num text-right font-mono text-sm">
-        <span class="font-semibold {% if t.quantity_changed > 0 %}text-accent{% else %}text-ink{% endif %}">
+        <span class="font-semibold {% if t.quantity_changed > 0 %}text-positive{% else %}text-ink{% endif %}">
           {% if t.quantity_changed > 0 %}+{% else %}−{% endif %}{{ t.quantity_changed|absval|qty }}
         </span>
         <span class="text-xs text-muted font-sans ml-0.5">
