@@ -39,3 +39,4 @@ class SeedDemoCommandTests(TestCase):
         admin.refresh_from_db()
         self.assertEqual(admin.password_plain, "new-password-123")
         self.assertTrue(admin.check_password("new-password-123"))
+

@@ -185,6 +185,9 @@
   .chip { @apply inline-flex items-center rounded-full border border-control bg-surface px-3.5 whitespace-nowrap text-ink; min-height: 40px; font-size: 14px; }
   .chip[aria-current="true"] { @apply border-ink bg-ink text-white; }
 
+  .chip-sm { @apply inline-flex items-center rounded-[6px] border border-control bg-surface px-3 text-ink whitespace-nowrap font-medium transition-colors hover:bg-raised; min-height: 34px; font-size: 13px; }
+  .chip-sm[aria-current="true"] { @apply border-ink bg-ink text-white; }
+
   /* Language switch: UZ / RU / EN segmented control */
   .lang-switch { @apply inline-flex rounded-[6px] border border-control bg-surface p-0.5; }
   .lang-option {

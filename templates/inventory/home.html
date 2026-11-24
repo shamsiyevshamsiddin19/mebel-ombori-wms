@@ -5,32 +5,58 @@
 {% with whole_count=whole_stock|length offcut_count=offcuts|length %}
 <div x-data="{ tab: '{{ tab }}' }">
 
-  {# ---- Title row ---- #}
-  <div class="flex flex-wrap items-end justify-between gap-4">
+  {# ---- Title row & Actions ---- #}
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
     <div class="min-w-0">
-      <h1 class="font-bold text-[24px] leading-8 lg:text-[32px] lg:leading-10">{% translate "Ombor" %}</h1>
-      <p class="mt-1 text-muted" style="font-size:15px">
+      <h1 class="font-bold text-[24px] leading-8 lg:text-[30px] lg:leading-9 text-ink">{% translate "Ombor" %}</h1>
+      <p class="mt-0.5 text-muted" style="font-size:14px">
         {% if user.is_warehouse_admin %}{% translate "Barcha materiallar" %}{% else %}{% blocktranslate with roles=user.worker_roles|role_list %}{{ roles }} uchun materiallar{% endblocktranslate %}{% endif %}
-        · <span class="num">{{ whole_count }}</span> {% blocktranslate context "count" count n=whole_count %}material{% plural %}material{% endblocktranslate %}, <span class="num">{{ offcut_count }}</span> {% blocktranslate context "count" count n=offcut_count %}qoldiq{% plural %}qoldiq{% endblocktranslate %}
+        · <span class="num font-medium text-ink">{{ whole_count }}</span> {% blocktranslate context "count" count n=whole_count %}material{% plural %}material{% endblocktranslate %}, <span class="num font-medium text-ink">{{ offcut_count }}</span> {% blocktranslate context "count" count n=offcut_count %}qoldiq{% plural %}qoldiq{% endblocktranslate %}
       </p>
     </div>
+    {% if user.is_warehouse_admin %}
+    <div class="flex items-center gap-2.5">
+      <a href="{% url 'inventory:kirim' %}" class="btn btn-primary text-sm font-medium shadow-xs">
+        {% icon "arrival" 16 %} {% translate "Kirim qilish" %}
+      </a>
+      <a href="{% url 'inventory:material_create' %}" class="btn btn-secondary text-sm font-medium">
+        {% icon "plus" 16 %} {% translate "Yangi material" %}
+      </a>
+    </div>
+    {% elif can_add_offcut %}
+    <div>
+      <a href="{% url 'inventory:offcut_add' %}" class="btn btn-secondary text-sm font-medium">
+        {% icon "plus" 16 %} {% translate "Qoldiq qo'shish" %}
+      </a>
+    </div>
+    {% endif %}
   </div>
 
-  {# ---- Search & category filter ---- #}
-  <form method="get" class="mt-6 flex flex-col gap-3 md:flex-row md:items-center" role="search">
+  {# ---- Search & category filter toolbar ---- #}
+  <form method="get" class="mt-5 flex flex-wrap items-center gap-2.5 rounded-[8px] border border-line bg-surface p-2 shadow-xs md:flex-nowrap" role="search">
     <input type="hidden" name="tab" :value="tab" value="{{ tab }}">
     {% if category %}<input type="hidden" name="category" value="{{ category }}">{% endif %}
-    <div class="relative md:w-[316px]">
+
+    <div class="relative min-w-[220px] flex-1">
       <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted">{% icon "search" 16 %}</span>
-      {% translate "Nomi bo'yicha qidirish" as search_label %}<input type="search" name="q" value="{{ query }}" placeholder="{{ search_label }}" aria-label="{{ search_label }}" class="control !pl-9">
+      {% translate "Nomi bo'yicha qidirish" as search_label %}
+      <input type="search" name="q" value="{{ query }}" placeholder="{{ search_label }}..." aria-label="{{ search_label }}"
+             class="control !min-h-[38px] w-full !border-line !pl-9 !text-sm hover:!border-control focus:!border-accent">
     </div>
+
     {% if categories|length > 1 %}
-    <div class="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:px-0 md:pb-0">
-      <a class="chip" href="{% query_with category='' %}" {% if not category %}aria-current="true"{% endif %}>{% translate "Hammasi" %}</a>
+    <div class="flex flex-wrap items-center gap-1.5 overflow-x-auto py-0.5">
+      <a class="chip-sm" href="{% query_with category='' %}" {% if not category %}aria-current="true"{% endif %}>{% translate "Hammasi" %}</a>
       {% for code, name in categories %}
-        <a class="chip" href="{% query_with category=code %}" {% if category == code %}aria-current="true"{% endif %}>{{ name }}</a>
+        <a class="chip-sm" href="{% query_with category=code %}" {% if category == code %}aria-current="true"{% endif %}>{{ name }}</a>
       {% endfor %}
     </div>
+    {% endif %}
+
+    {% if query or category %}
+    <a href="{% query_with q='' category='' %}" class="inline-flex items-center gap-1 px-2 py-1 text-xs text-muted hover:text-negative whitespace-nowrap">
+      {% icon "close" 14 %} {% translate "Filtrni tozalash" %}
+    </a>
     {% endif %}
   </form>
 
@@ -42,45 +68,169 @@
 
   {# ================= Butun materiallar ================= #}
   <section class="{% if tab == 'whole' %}block{% else %}hidden lg:block{% endif %} lg:mt-6" :class="tab === 'whole' ? 'block' : 'hidden lg:block'" aria-labelledby="whole-title">
-    <div class="panel mt-4 overflow-hidden lg:mt-0">
-      <div class="panel-head hidden lg:flex">
-        <h2 id="whole-title" class="panel-title">{% translate "Butun materiallar" %} <span class="num font-normal text-muted">{{ whole_count }}</span></h2>
-        <p class="text-muted" style="font-size:12px">{% translate "Miqdor omborda turgan to'liq birliklarda" %}</p>
+    <div class="panel mt-4 overflow-hidden lg:mt-0 shadow-xs">
+      <div class="panel-head border-b border-line px-5 py-3.5 hidden lg:flex">
+        <div class="flex items-center gap-2.5">
+          <h2 id="whole-title" class="font-semibold text-ink" style="font-size:16px">{% translate "Butun materiallar" %}</h2>
+          <span class="pill pill-neutral font-medium">{{ whole_count }}</span>
+        </div>
+        <p class="text-muted text-xs">{% translate "Miqdor omborda turgan to'liq birliklarda" %}</p>
       </div>
+
       {% if whole_stock %}
-      <div class="hidden {% if user.is_warehouse_admin %}grid-cols-[minmax(0,1fr)_150px_110px_120px_112px]{% else %}grid-cols-[minmax(0,1fr)_150px_110px_112px]{% endif %} gap-x-4 px-5 pb-2 text-muted md:grid" style="font-size:12px" aria-hidden="true">
-        <span>{% translate "Material" %}</span><span class="text-right">{% translate "Omborda" %}</span><span class="text-right">{% translate "Minimal" %}</span>{% if user.is_warehouse_admin %}<span class="text-right">{% translate "Qiymati" %}</span>{% endif %}<span></span>
+      {# Desktop Table #}
+      <div class="hidden md:block overflow-x-auto">
+        <table class="w-full border-collapse text-left" style="font-size: 13.5px;">
+          <thead>
+            <tr class="border-b border-line bg-raised/50 text-[11px] font-semibold uppercase tracking-wider text-muted">
+              <th class="px-5 py-3 text-left font-semibold">{% translate "Material nomi" %}</th>
+              <th class="px-4 py-3 text-left font-semibold">{% translate "Kategoriya" %}</th>
+              <th class="px-4 py-3 text-left font-semibold">{% translate "O'lchami" %}</th>
+              <th class="px-4 py-3 text-right font-semibold">{% translate "Omborda" %}</th>
+              <th class="px-3 py-3 text-left font-semibold">{% translate "Birlik" %}</th>
+              <th class="px-4 py-3 text-right font-semibold">{% translate "Idish / Qadoq" %}</th>
+              <th class="px-4 py-3 text-right font-semibold">{% translate "Minimal" %}</th>
+              {% if user.is_warehouse_admin %}
+              <th class="px-5 py-3 text-right font-semibold">{% translate "Qiymati" %}</th>
+              {% endif %}
+              <th class="px-4 py-3 text-center font-semibold">{% translate "Holati" %}</th>
+              <th class="px-5 py-3 text-right font-semibold">{% translate "Amal" %}</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-rule bg-surface">
+            {% for stock in whole_stock %}{% with m=stock.material %}
+            <tr class="hover:bg-raised/40 transition-colors">
+              {# 1. Material nomi #}
+              <td class="px-5 py-3.5 font-medium text-ink">
+                <span class="block text-[14.5px] leading-snug">{{ m.name }}</span>
+              </td>
+
+              {# 2. Kategoriya #}
+              <td class="px-4 py-3.5 whitespace-nowrap">
+                <span class="inline-flex items-center rounded-[4px] border border-line/70 bg-raised px-2 py-0.5 text-xs font-medium text-muted">
+                  {{ m.category|cat_label }}
+                </span>
+              </td>
+
+              {# 3. O'lchami #}
+              <td class="num px-4 py-3.5 whitespace-nowrap text-ink">
+                {% if stock.length_mm %}
+                  <span>{{ stock.length_mm }} × {{ stock.width_mm }} <span class="text-xs text-muted">{% translate "mm" %}</span></span>
+                {% else %}
+                  <span class="text-muted/60">—</span>
+                {% endif %}
+              </td>
+
+              {# 4. Omborda #}
+              <td class="num px-4 py-3.5 text-right whitespace-nowrap">
+                <span class="text-[15px] font-semibold text-ink">{{ stock.quantity|qty }}</span>
+              </td>
+
+              {# 5. Birlik #}
+              <td class="px-3 py-3.5 text-xs text-muted whitespace-nowrap">
+                {{ m.unit_short }}
+              </td>
+
+              {# 6. Idish / Qadoq #}
+              <td class="num px-4 py-3.5 text-right text-xs text-muted whitespace-nowrap">
+                {% if stock.container_count %}
+                  <span>≈ <strong class="font-medium text-ink">{{ stock.container_count|qty }}</strong> {% translate "idish" %}</span>
+                {% else %}
+                  <span class="text-muted/50">—</span>
+                {% endif %}
+              </td>
+
+              {# 7. Minimal #}
+              <td class="num px-4 py-3.5 text-right text-xs text-muted whitespace-nowrap">
+                {{ m.minimum_threshold|qty }} {{ m.unit_short }}
+              </td>
+
+              {# 8. Qiymati #}
+              {% if user.is_warehouse_admin %}
+              <td class="num px-5 py-3.5 text-right font-medium text-ink whitespace-nowrap">
+                {{ stock.total_value_usd|usd }}
+              </td>
+              {% endif %}
+
+              {# 9. Holati #}
+              <td class="px-4 py-3.5 text-center whitespace-nowrap">
+                {% if stock.quantity <= 0 %}
+                  <span class="pill pill-neutral">{% translate "Tugagan" %}</span>
+                {% elif stock.is_below_threshold %}
+                  <span class="pill pill-neg font-semibold">{% translate "Kam qoldi" %}</span>
+                {% else %}
+                  <span class="pill pill-pos">{% translate "Yetarli" %}</span>
+                {% endif %}
+              </td>
+
+              {# 10. Amal #}
+              <td class="px-5 py-3.5 text-right whitespace-nowrap">
+                {% if user.is_warehouse_admin %}
+                  <span class="pill pill-neutral text-xs">{% translate "Ishchi oladi" %}</span>
+                {% elif stock.quantity > 0 %}
+                  <a href="{% url 'inventory:withdraw_whole' stock.pk %}" class="btn btn-secondary !px-3 !py-1 text-xs font-medium" aria-label="{% blocktranslate with name=m.name %}{{ name }} — oldim{% endblocktranslate %}">
+                    {% icon "take" 14 %} {% translate "Oldim" %}
+                  </a>
+                {% else %}
+                  <span class="pill pill-neutral text-xs">{% translate "Tugagan" %}</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endwith %}{% endfor %}
+          </tbody>
+        </table>
       </div>
-      <ul>
+
+      {# Mobile Card List #}
+      <ul class="md:hidden divide-y divide-rule">
         {% for stock in whole_stock %}{% with m=stock.material %}
-        <li class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 border-t border-rule px-4 py-3 {% if user.is_warehouse_admin %}md:grid-cols-[minmax(0,1fr)_150px_110px_120px_112px]{% else %}md:grid-cols-[minmax(0,1fr)_150px_110px_112px]{% endif %} md:px-5 md:py-0" style="min-height:56px">
-          <div class="min-w-0">
-            <p class="truncate font-medium" style="font-size:15px">{{ m.name }}</p>
-            <p class="truncate text-muted" style="font-size:13px">{{ m.category|cat_label }}{% if stock.length_mm %} · {{ stock.length_mm }}×{{ stock.width_mm }} {% translate "mm" %}{% endif %}<span class="md:hidden"> · {% translate "min" %} {{ m.minimum_threshold|qty }}</span></p>
-            <p class="mt-1 flex items-center gap-2 md:hidden">
-              <span class="num font-semibold" style="font-size:17px">{{ stock.quantity|qty }}</span><span class="text-muted">{{ m.unit_short }}</span>
-              {% if stock.container_count %}<span class="num text-muted" style="font-size:13px">≈ {{ stock.container_count|qty }} {% translate "idish" %}</span>{% endif %}
-              {% if stock.is_below_threshold %}<span class="pill pill-neg">{% translate "Kam qoldi" %}</span>{% endif %}
-            </p>
+        <li class="px-4 py-3.5 flex flex-col gap-2">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="font-medium text-ink text-[15px] truncate">{{ m.name }}</p>
+              <p class="text-xs text-muted mt-0.5">
+                {{ m.category|cat_label }}
+                {% if stock.length_mm %} · {{ stock.length_mm }}×{{ stock.width_mm }} {% translate "mm" %}{% endif %}
+                · {% translate "min" %} {{ m.minimum_threshold|qty }}
+              </p>
+            </div>
+            <div class="flex-none">
+              {% if stock.quantity <= 0 %}
+                <span class="pill pill-neutral text-xs">{% translate "Tugagan" %}</span>
+              {% elif stock.is_below_threshold %}
+                <span class="pill pill-neg text-xs font-semibold">{% translate "Kam qoldi" %}</span>
+              {% else %}
+                <span class="pill pill-pos text-xs">{% translate "Yetarli" %}</span>
+              {% endif %}
+            </div>
           </div>
-          <div class="hidden text-right md:block">
-            <span class="num font-semibold" style="font-size:15px">{{ stock.quantity|qty }}</span> <span class="text-muted">{{ m.unit_short }}</span>
-            {% if stock.is_below_threshold %}<p><span class="pill pill-neg">{% translate "Kam qoldi" %}</span></p>{% elif stock.container_count %}<p class="num text-muted" style="font-size:12px">≈ {{ stock.container_count|qty }} {% translate "idish" %}</p>{% endif %}
-          </div>
-          <div class="num hidden text-right text-muted md:block">{{ m.minimum_threshold|qty }} {{ m.unit_short }}</div>
-          {% if user.is_warehouse_admin %}<div class="num hidden text-right md:block">{{ stock.total_value_usd|usd }}</div>{% endif %}
-          <div class="text-right">
-            {% if user.is_warehouse_admin %}
-              <span class="pill pill-neutral">{% translate "Ishchi oladi" %}</span>
-            {% elif stock.quantity > 0 %}
-              <a href="{% url 'inventory:withdraw_whole' stock.pk %}" class="btn btn-secondary min-h-11 md:min-h-9" aria-label="{% blocktranslate with name=m.name %}{{ name }} — oldim{% endblocktranslate %}">{% icon "take" %} {% translate "Oldim" %}</a>
-            {% else %}
-              <span class="pill pill-neutral">{% translate "Tugagan" %}</span>
-            {% endif %}
+          <div class="flex items-center justify-between pt-1 border-t border-rule/60">
+            <div>
+              <span class="num font-semibold text-ink text-[17px]">{{ stock.quantity|qty }}</span>
+              <span class="text-muted text-xs">{{ m.unit_short }}</span>
+              {% if stock.container_count %}
+                <span class="num text-muted text-xs ml-1">(≈ {{ stock.container_count|qty }} {% translate "idish" %})</span>
+              {% endif %}
+              {% if user.is_warehouse_admin %}
+                <span class="num text-xs text-muted block mt-0.5">{{ stock.total_value_usd|usd }}</span>
+              {% endif %}
+            </div>
+            <div>
+              {% if user.is_warehouse_admin %}
+                <span class="pill pill-neutral text-xs">{% translate "Ishchi oladi" %}</span>
+              {% elif stock.quantity > 0 %}
+                <a href="{% url 'inventory:withdraw_whole' stock.pk %}" class="btn btn-secondary min-h-10 px-3.5 text-xs font-medium" aria-label="{% blocktranslate with name=m.name %}{{ name }} — oldim{% endblocktranslate %}">
+                  {% icon "take" 15 %} {% translate "Oldim" %}
+                </a>
+              {% else %}
+                <span class="pill pill-neutral text-xs">{% translate "Tugagan" %}</span>
+              {% endif %}
+            </div>
           </div>
         </li>
         {% endwith %}{% endfor %}
       </ul>
+
       {% else %}
         <div class="border-t border-rule px-5 py-8">
           <p class="font-medium">{% if query or category %}{% translate "Qidiruv bo'yicha material topilmadi." %}{% else %}{% translate "Kasbingiz uchun hali material qo'shilmagan." %}{% endif %}</p>
@@ -92,39 +242,99 @@
 
   {# ================= Qoldiq materiallar ================= #}
   <section class="{% if tab == 'offcuts' %}block{% else %}hidden lg:block{% endif %} lg:mt-6" :class="tab === 'offcuts' ? 'block' : 'hidden lg:block'" aria-labelledby="offcut-title">
-    <div class="panel mt-4 overflow-hidden lg:mt-0">
-      <div class="panel-head hidden lg:flex">
-        <h2 id="offcut-title" class="panel-title">{% translate "Qoldiq materiallar" %} <span class="num font-normal text-muted">{{ offcut_count }}</span></h2>
-        <p class="text-muted" style="font-size:12px">{% translate "Kesishdan qolgan, qayta ishlatsa bo'ladigan bo'laklar · rasm list o'lchamiga nisbatan" %}</p>
+    <div class="panel mt-4 overflow-hidden lg:mt-0 shadow-xs">
+      <div class="panel-head border-b border-line px-5 py-3.5 hidden lg:flex">
+        <div class="flex items-center gap-2.5">
+          <h2 id="offcut-title" class="font-semibold text-ink" style="font-size:16px">{% translate "Qoldiq materiallar" %}</h2>
+          <span class="pill pill-neutral font-medium">{{ offcut_count }}</span>
+        </div>
+        <p class="text-muted text-xs">{% translate "Kesishdan qolgan, qayta ishlatsa bo'ladigan bo'laklar · rasm list o'lchamiga nisbatan" %}</p>
       </div>
+
       {% if offcuts %}
-      <div class="hidden grid-cols-[64px_minmax(0,1fr)_100px_170px_112px] gap-x-4 px-5 pb-2 text-muted md:grid" style="font-size:12px" aria-hidden="true">
-        <span></span><span>{% translate "Material va o'lcham" %}</span><span class="text-right">{% translate "Soni" %}</span><span>{% translate "Kim qo'shgan" %}</span><span></span>
+      {# Desktop Offcut Table #}
+      <div class="hidden md:block overflow-x-auto">
+        <table class="w-full border-collapse text-left" style="font-size: 13.5px;">
+          <thead>
+            <tr class="border-b border-line bg-raised/50 text-[11px] font-semibold uppercase tracking-wider text-muted">
+              <th class="px-4 py-3 text-center w-16 font-semibold">{% translate "Ko'rinishi" %}</th>
+              <th class="px-5 py-3 text-left font-semibold">{% translate "Material nomi" %}</th>
+              <th class="px-4 py-3 text-left font-semibold">{% translate "Kategoriya" %}</th>
+              <th class="px-4 py-3 text-left font-semibold">{% translate "O'lchami" %}</th>
+              <th class="px-4 py-3 text-right font-semibold">{% translate "Soni" %}</th>
+              <th class="px-4 py-3 text-left font-semibold">{% translate "Joylashuvi / Izoh" %}</th>
+              <th class="px-4 py-3 text-left font-semibold">{% translate "Kim qo'shgan" %}</th>
+              <th class="px-4 py-3 text-left font-semibold">{% translate "Vaqti" %}</th>
+              <th class="px-5 py-3 text-right font-semibold">{% translate "Amal" %}</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-rule bg-surface">
+            {% for offcut in offcuts %}{% with m=offcut.material %}
+            <tr class="hover:bg-raised/40 transition-colors">
+              <td class="px-4 py-3 text-center">
+                <div class="inline-block flex-none">{% offcut_figure offcut.length_mm offcut.width_mm m.whole_stock.length_mm m.whole_stock.width_mm %}</div>
+              </td>
+              <td class="px-5 py-3.5 font-medium text-ink">
+                <span class="block text-[14.5px] leading-snug">{{ m.name }}</span>
+              </td>
+              <td class="px-4 py-3.5 whitespace-nowrap">
+                <span class="inline-flex items-center rounded-[4px] border border-line/70 bg-raised px-2 py-0.5 text-xs font-medium text-muted">
+                  {{ m.category|cat_label }}
+                </span>
+              </td>
+              <td class="num px-4 py-3.5 font-medium text-ink whitespace-nowrap">
+                {{ offcut.length_mm }} × {{ offcut.width_mm }} <span class="text-xs text-muted">{% translate "mm" %}</span>
+              </td>
+              <td class="num px-4 py-3.5 text-right whitespace-nowrap">
+                <span class="text-[15px] font-semibold text-ink">{{ offcut.quantity }}</span> <span class="text-xs text-muted">{% translate "dona" %}</span>
+              </td>
+              <td class="px-4 py-3.5 text-xs text-muted max-w-[200px] truncate">
+                {{ offcut.notes|default:"—" }}
+              </td>
+              <td class="px-4 py-3.5 text-xs text-ink whitespace-nowrap">
+                {{ offcut.created_by.display_name|default:"—" }}
+              </td>
+              <td class="px-4 py-3.5 text-xs text-muted whitespace-nowrap">
+                {{ offcut.created_at|date:"j E, H:i" }}
+              </td>
+              <td class="px-5 py-3.5 text-right whitespace-nowrap">
+                {% if user.is_warehouse_admin %}
+                  <span class="pill pill-neutral text-xs">{% translate "Ishchi oladi" %}</span>
+                {% else %}
+                  <a href="{% url 'inventory:offcut_withdraw' offcut.pk %}" class="btn btn-secondary !px-3 !py-1 text-xs font-medium" aria-label="{% blocktranslate with name=m.name length=offcut.length_mm width=offcut.width_mm %}{{ name }} {{ length }}×{{ width }} — oldim{% endblocktranslate %}">
+                    {% icon "take" 14 %} {% translate "Oldim" %}
+                  </a>
+                {% endif %}
+              </td>
+            </tr>
+            {% endwith %}{% endfor %}
+          </tbody>
+        </table>
       </div>
-      <ul>
+
+      {# Mobile Offcut Card List #}
+      <ul class="md:hidden divide-y divide-rule">
         {% for offcut in offcuts %}{% with m=offcut.material %}
-        <li class="grid grid-cols-[64px_minmax(0,1fr)_auto] items-center gap-x-3 border-t border-rule px-4 py-3 md:grid-cols-[64px_minmax(0,1fr)_100px_170px_112px] md:gap-x-4 md:px-5" style="min-height:64px">
+        <li class="px-4 py-3.5 flex items-center gap-3">
           <div class="flex-none">{% offcut_figure offcut.length_mm offcut.width_mm m.whole_stock.length_mm m.whole_stock.width_mm %}</div>
-          <div class="min-w-0">
-            <p class="truncate font-medium" style="font-size:15px">{{ m.name }}</p>
-            <p class="num" style="font-size:14px"><span class="whitespace-nowrap">{{ offcut.length_mm }} × {{ offcut.width_mm }} {% translate "mm" %}</span><span class="whitespace-nowrap text-muted md:hidden"> · {{ offcut.quantity }} {% translate "dona" %}</span></p>
-            {% if offcut.notes %}<p class="truncate text-muted" style="font-size:13px">{{ offcut.notes }}</p>{% endif %}
+          <div class="min-w-0 flex-1">
+            <p class="font-medium text-ink text-[15px] truncate">{{ m.name }}</p>
+            <p class="num text-sm text-ink"><span class="whitespace-nowrap">{{ offcut.length_mm }} × {{ offcut.width_mm }} {% translate "mm" %}</span> <span class="text-muted text-xs">· {{ offcut.quantity }} {% translate "dona" %}</span></p>
+            {% if offcut.notes %}<p class="truncate text-xs text-muted">{{ offcut.notes }}</p>{% endif %}
           </div>
-          <div class="num hidden text-right md:block"><span class="font-semibold">{{ offcut.quantity }}</span> <span class="text-muted">{% translate "dona" %}</span></div>
-          <div class="hidden min-w-0 md:block">
-            <p class="truncate">{{ offcut.created_by.display_name|default:"—" }}</p>
-            <p class="text-muted" style="font-size:12px">{{ offcut.created_at|date:"j E, H:i" }}</p>
-          </div>
-          <div class="text-right">
+          <div class="flex-none text-right">
             {% if user.is_warehouse_admin %}
-            <span class="pill pill-neutral">{% translate "Ishchi oladi" %}</span>
+              <span class="pill pill-neutral text-xs">{% translate "Ishchi oladi" %}</span>
             {% else %}
-            <a href="{% url 'inventory:offcut_withdraw' offcut.pk %}" class="btn btn-secondary min-h-11 md:min-h-9" aria-label="{% blocktranslate with name=m.name length=offcut.length_mm width=offcut.width_mm %}{{ name }} {{ length }}×{{ width }} — oldim{% endblocktranslate %}">{% icon "take" %} {% translate "Oldim" %}</a>
+              <a href="{% url 'inventory:offcut_withdraw' offcut.pk %}" class="btn btn-secondary min-h-10 px-3 text-xs font-medium" aria-label="{% blocktranslate with name=m.name length=offcut.length_mm width=offcut.width_mm %}{{ name }} {{ length }}×{{ width }} — oldim{% endblocktranslate %}">
+                {% icon "take" 15 %} {% translate "Oldim" %}
+              </a>
             {% endif %}
           </div>
         </li>
         {% endwith %}{% endfor %}
       </ul>
+
       {% else %}
         <div class="border-t border-rule px-5 py-8">
           <p class="font-medium">{% if query or category %}{% translate "Qidiruv bo'yicha qoldiq topilmadi." %}{% else %}{% translate "Hozircha qoldiq yo'q." %}{% endif %}</p>
