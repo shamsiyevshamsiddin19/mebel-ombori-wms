@@ -371,7 +371,7 @@ class KirimView(WarehouseAdminRequiredMixin, FormView):
             for m in materials
         }
         context["recent_kirim"] = (
-            InventoryTransaction.objects.kirim().select_related("material", "user")[:8]
+            InventoryTransaction.objects.kirim().select_related("material", "user")[:10]
         )
         return context
 

@@ -3,15 +3,22 @@
 {% block title %}{% translate "Kirim" %}{% endblock %}
 {% block content %}
 {{ material_meta|json_script:"material-meta" }}
-<div class="flex flex-wrap items-end justify-between gap-4">
+
+{# Header #}
+<div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
   <div>
-    <h1 class="font-bold text-[24px] leading-8 lg:text-[32px] lg:leading-10">{% translate "Kirim" %}</h1>
-    <p class="mt-1 text-muted" style="font-size:15px">{% translate "Kelgan materialni USD narxi bilan kiriting. O'rtacha narx avtomatik qayta hisoblanadi." %}</p>
+    <a href="{% url 'inventory:home' %}" class="inline-flex items-center gap-1.5 text-xs text-muted hover:text-ink">
+      {% icon "back" 14 %} {% translate "Ombor" %}
+    </a>
+    <h1 class="mt-1 font-bold text-[24px] leading-8 lg:text-[30px] lg:leading-9 text-ink">{% translate "Kirim" %}</h1>
+    <p class="mt-0.5 text-muted" style="font-size:14px">{% translate "Kelgan materialni USD narxi bilan kiriting. O'rtacha narx avtomatik qayta hisoblanadi." %}</p>
   </div>
-  <a href="{% url 'inventory:material_create' %}" class="btn btn-secondary">{% icon "plus" %} {% translate "Yangi material" %}</a>
+  <a href="{% url 'inventory:material_create' %}" class="btn btn-secondary min-h-10 px-3.5 text-xs font-medium">
+    {% icon "plus" 16 %} {% translate "Yangi material" %}
+  </a>
 </div>
 
-<div class="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_384px]"
+<div class="mt-5"
      x-data="{
        meta: JSON.parse(document.getElementById('material-meta').textContent),
        material: '{{ form.material.value|default_if_none:''|escapejs }}',
@@ -25,79 +32,279 @@
        get total() { return this.mode === 'total' ? this.p : this.p * this.qty; },
        get unit() { return this.qty ? (this.mode === 'total' ? this.p / this.qty : this.p) : 0; },
        get stock() { return this.m ? Number(this.m.stock) : 0; },
-       get avg() { if (!this.m || !this.qty) return null; const old = this.stock * Number(this.m.price); return this.stock > 0 ? (old + this.total) / (this.stock + this.qty) : this.unit; },
+       get avg() { if (!this.m || !this.qty) return null; const old = this.stock * Number(this.m.price); return (this.stock + this.qty > 0) ? (old + this.total) / (this.stock + this.qty) : this.unit; },
        usd(v, d = 2) { return '$' + Number(v || 0).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d }); },
        n(v) { return Number(v || 0).toLocaleString('en-US', { maximumFractionDigits: 2 }); }
      }">
-  <form method="post" class="panel form-stack p-5 sm:p-6" novalidate>
+
+  {# =================== TOP CONSOLE: INPUT FORM + LIVE CALCULATOR =================== #}
+  <form method="post" novalidate>
     {% csrf_token %}
     {% include "partials/form_errors.html" %}
-    <div class="{% if form.material.errors %}has-error{% endif %}">
-      <label class="field-label" for="{{ form.material.id_for_label }}">{{ form.material.label }}</label>
-      <select name="{{ form.material.html_name }}" id="{{ form.material.id_for_label }}" x-model="material" required>
-        <option value="">{% translate "Materialni tanlang" %}</option>
-        {% for choice in form.material.field.choices %}{% if choice.0 %}<option value="{{ choice.0 }}" {% if form.material.value|stringformat:'s' == choice.0|stringformat:'s' %}selected{% endif %}>{{ choice.1 }}</option>{% endif %}{% endfor %}
-      </select>
-      {% for e in form.material.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
-      <p class="field-help" x-show="m" x-cloak>{% translate "Omborda:" %} <span class="num" x-text="m && n(m.stock) + ' ' + m.unit"></span> · {% translate "o'rtacha narx" %} <span class="num" x-text="m && usd(m.price, 4)"></span></p>
-    </div>
 
-    <div class="grid gap-4 sm:grid-cols-2">
-      <div x-show="m && m.container" x-cloak>
-        {% include "partials/field.html" with field=form.containers %}
+    <div class="grid items-start gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
+      {# Left: Form Inputs #}
+      <div class="panel p-5 sm:p-6 form-stack shadow-xs bg-surface">
+        {# Material #}
+        <div class="{% if form.material.errors %}has-error{% endif %}">
+          <label class="field-label" for="{{ form.material.id_for_label }}">{{ form.material.label }}</label>
+          <select name="{{ form.material.html_name }}" id="{{ form.material.id_for_label }}" x-model="material" class="control" required>
+            <option value="">{% translate "Materialni tanlang" %}</option>
+            {% for choice in form.material.field.choices %}{% if choice.0 %}
+              <option value="{{ choice.0 }}" {% if form.material.value|stringformat:'s' == choice.0|stringformat:'s' %}selected{% endif %}>{{ choice.1 }}</option>
+            {% endif %}{% endfor %}
+          </select>
+          {% for e in form.material.errors %}<p class="field-error text-xs">{{ e }}</p>{% endfor %}
+          <p class="text-[11px] text-muted mt-1.5 flex items-center gap-1.5" x-show="m" x-cloak>
+            <span class="inline-block h-1.5 w-1.5 rounded-full bg-accent flex-none"></span>
+            <span>{% translate "Omborda:" %} <strong class="num font-mono text-ink font-semibold" x-text="m && n(m.stock) + ' ' + m.unit"></strong> · {% translate "o'rtacha narx" %}: <strong class="num font-mono text-ink font-semibold" x-text="m && usd(m.price, 4)"></strong></span>
+          </p>
+        </div>
+
+        {# Quantity & Containers #}
+        <div class="grid gap-3 sm:grid-cols-2">
+          <div x-show="m && m.container" x-cloak>
+            <label class="field-label" for="{{ form.containers.id_for_label }}">{{ form.containers.label }}</label>
+            <div class="relative">
+              <input type="number" name="{{ form.containers.html_name }}" id="{{ form.containers.id_for_label }}" step="0.01" min="0.01" inputmode="decimal" class="control font-mono pr-12" x-model.number="containers" value="{{ form.containers.value|default_if_none:'' }}" placeholder="Masalan: 5">
+              <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-muted">{% translate "idish" %}</span>
+            </div>
+            {% for e in form.containers.errors %}<p class="field-error text-xs">{{ e }}</p>{% endfor %}
+            <p class="text-[11px] text-muted mt-1" x-show="m && m.container" x-cloak>1 idish = <span class="font-mono text-ink" x-text="m && n(m.container)"></span> <span x-text="m && m.unit"></span></p>
+          </div>
+
+          <div class="{% if form.quantity.errors %}has-error{% endif %}">
+            <label class="field-label" for="{{ form.quantity.id_for_label }}">
+              {% translate "Miqdor" %} <span class="font-normal text-muted" x-text="m ? '(' + m.unit + ')' : ''"></span>
+            </label>
+            <div class="relative">
+              <input type="number" name="{{ form.quantity.html_name }}" id="{{ form.quantity.id_for_label }}" step="1" min="1" inputmode="numeric" class="control font-mono pr-12" :value="(m && m.container && containers) ? qty : quantity" @input="quantity = $event.target.value" :readonly="!!(m && m.container && containers)" value="{{ form.quantity.value|default_if_none:'' }}" placeholder="100">
+              <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-muted" x-text="m ? m.unit : ''"></span>
+            </div>
+            {% for e in form.quantity.errors %}<p class="field-error text-xs">{{ e }}</p>{% endfor %}
+            <p class="text-[11px] text-muted mt-1" x-show="m && m.container && containers" x-cloak>
+              {% translate "Idishlar soni" %} × <span class="font-mono text-ink font-semibold" x-text="m && n(m.container)"></span> <span x-text="m && m.unit"></span>
+            </p>
+          </div>
+        </div>
+
+        {# Price Mode (Optom vs Dona narxi) #}
+        <div>
+          <label class="field-label">{{ form.price_mode.label }}</label>
+          <div class="grid grid-cols-2 gap-2">
+            <label class="choice-tile cursor-pointer transition-colors" :class="{ 'border-accent bg-accent-soft text-accent-ink font-semibold': mode === 'total' }">
+              <input type="radio" name="{{ form.price_mode.html_name }}" value="total" x-model="mode" class="hidden">
+              <span class="text-xs sm:text-sm">{% translate "Optom narx" %}</span>
+            </label>
+            <label class="choice-tile cursor-pointer transition-colors" :class="{ 'border-accent bg-accent-soft text-accent-ink font-semibold': mode === 'unit' }">
+              <input type="radio" name="{{ form.price_mode.html_name }}" value="unit" x-model="mode" class="hidden">
+              <span class="text-xs sm:text-sm">{% translate "Dona narxi" %}</span>
+            </label>
+          </div>
+        </div>
+
+        {# Price USD input #}
+        <div class="{% if form.price_usd.errors %}has-error{% endif %}">
+          {% translate "Partiyaning umumiy narxi (USD $)" as t_total_price %}{% translate "Bir birlik narxi (USD $)" as t_unit_price %}
+          <label class="field-label" for="{{ form.price_usd.id_for_label }}">
+            <span x-text="mode === 'total' ? '{{ t_total_price|escapejs }}' : '{{ t_unit_price|escapejs }}'">{% translate "Partiyaning umumiy narxi (USD $)" %}</span>
+          </label>
+          <div class="relative">
+            <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted">$</span>
+            <input type="number" name="{{ form.price_usd.html_name }}" id="{{ form.price_usd.id_for_label }}" step="0.01" :step="mode === 'total' ? '0.01' : '0.0001'" min="0" inputmode="decimal" required class="control font-mono pl-7 pr-3" x-model.number="price" value="{{ form.price_usd.value|default_if_none:'' }}" placeholder="0.00">
+          </div>
+          {% for e in form.price_usd.errors %}<p class="field-error text-xs">{{ e }}</p>{% endfor %}
+        </div>
+
+        {# Notes / Supplier / Invoice #}
+        <div>
+          <label class="field-label" for="{{ form.notes.id_for_label }}">{{ form.notes.label }} <span class="font-normal text-muted">{% translate "(ixtiyoriy)" %}</span></label>
+          <textarea name="{{ form.notes.html_name }}" id="{{ form.notes.id_for_label }}" rows="2" class="control py-2 text-sm" placeholder="{% translate "Yetkazib beruvchi, faktura raqami..." %}">{{ form.notes.value|default_if_none:'' }}</textarea>
+          {% for e in form.notes.errors %}<p class="field-error text-xs">{{ e }}</p>{% endfor %}
+        </div>
       </div>
-      <div class="{% if form.quantity.errors %}has-error{% endif %}">
-        <label class="field-label" for="{{ form.quantity.id_for_label }}">{% translate "Miqdor" %} <span class="font-normal text-muted" x-text="m ? '(' + m.unit + ')' : ''"></span></label>
-        <input type="number" name="{{ form.quantity.html_name }}" id="{{ form.quantity.id_for_label }}" step="1" min="1" inputmode="numeric"
-               :value="(m && m.container && containers) ? qty : quantity" @input="quantity = $event.target.value"
-               :readonly="!!(m && m.container && containers)" value="{{ form.quantity.value|default_if_none:'' }}">
-        {% for e in form.quantity.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
-        <p class="field-help" x-show="m && m.container && containers" x-cloak>{% translate "Idishlar soni" %} × <span x-text="m && n(m.container)"></span> <span x-text="m && m.unit"></span></p>
+
+      {# Right: Live Calculation & Impact Dashboard #}
+      <div class="panel p-5 sm:p-6 shadow-xs flex flex-col justify-between bg-surface border border-line h-full">
+        <div>
+          <div class="flex items-center justify-between pb-3 border-b border-line">
+            <h2 class="font-semibold text-ink text-sm flex items-center gap-2">
+              {% icon "chart" 15 "text-accent" %}
+              <span>{% translate "Partiya jami" %}</span>
+            </h2>
+            <span class="pill pill-accent text-[11px]" x-show="m" x-cloak x-text="m ? m.unit : ''"></span>
+          </div>
+
+          {# Idle state when no material #}
+          <div x-show="!m" class="py-12 text-center text-muted text-xs">
+            {% icon "arrival" 32 "mx-auto mb-2 text-muted/30" %}
+            <p class="font-medium text-ink">{% translate "Materialni tanlang" %}</p>
+            <p class="mt-0.5 text-muted">{% translate "Kelgan materialni USD narxi bilan kiriting. O'rtacha narx avtomatik qayta hisoblanadi." %}</p>
+          </div>
+
+          {# Active state when material selected #}
+          <div x-show="m" x-cloak class="mt-4 space-y-3.5 text-xs">
+            {# 1. Stock change preview #}
+            <div class="rounded-[6px] border border-line bg-raised/40 p-3.5">
+              <span class="text-[11px] text-muted font-medium uppercase tracking-wider block">{% translate "Kirimdan keyin omborda" %}</span>
+              <div class="mt-2.5 flex items-center justify-between font-mono">
+                <div>
+                  <span class="text-muted block text-[10.5px]">{% translate "Omborda:" %}</span>
+                  <span class="text-ink font-semibold text-sm" x-text="m ? n(stock) + ' ' + m.unit : '—'"></span>
+                </div>
+                <span class="text-accent font-bold text-sm" x-show="qty > 0">+</span>
+                <div x-show="qty > 0">
+                  <span class="text-muted block text-[10.5px]">{% translate "Miqdor" %}:</span>
+                  <span class="text-accent font-bold text-sm" x-text="n(qty) + ' ' + (m ? m.unit : '')"></span>
+                </div>
+                <span class="text-muted" x-show="qty > 0">&rarr;</span>
+                <div>
+                  <span class="text-muted block text-[10.5px]">{% translate "Kirimdan keyin omborda" %}:</span>
+                  <span class="text-pos-ink font-bold text-base" x-text="m ? n(stock + qty) + ' ' + m.unit : '—'"></span>
+                </div>
+              </div>
+            </div>
+
+            {# 2. Unit and Avg Price breakdown #}
+            <div class="rounded-[6px] border border-line bg-surface p-3.5 space-y-2.5">
+              <div class="flex items-center justify-between">
+                <span class="text-muted">{% translate "Bir birlik narxi" %}:</span>
+                <span class="font-mono font-semibold text-ink" x-text="qty && p ? usd(unit, 4) + ' / ' + (m ? m.unit : '') : '—'"></span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-muted">{% translate "o'rtacha narx" %}:</span>
+                <span class="font-mono text-muted" x-text="m ? usd(m.price, 4) : '—'"></span>
+              </div>
+              <div class="flex items-center justify-between border-t border-rule pt-2">
+                <span class="text-muted font-medium">{% translate "Yangi o'rtacha narx" %}:</span>
+                <span class="font-mono font-bold text-ink" x-text="avg !== null ? usd(avg, 4) : '—'"></span>
+              </div>
+            </div>
+
+            {# 3. Total batch sum highlight #}
+            <div class="rounded-[6px] bg-accent/[0.07] border border-accent/20 p-4 flex items-center justify-between">
+              <div>
+                <span class="text-[11px] text-accent-ink block font-semibold uppercase tracking-wider">{% translate "Partiya jami" %}</span>
+                <span class="text-xs text-muted" x-show="qty > 0" x-text="n(qty) + ' ' + (m ? m.unit : '')"></span>
+              </div>
+              <div class="text-right">
+                <span class="font-mono text-2xl font-bold text-ink" x-text="qty && p ? usd(total) : '$0.00'"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {# Submit button #}
+        <div class="mt-6 pt-3 border-t border-line">
+          <button type="submit" class="btn btn-primary btn-lg btn-block shadow-xs">
+            {% icon "arrival" 18 %}
+            <span>{% translate "Kirimni saqlash" %}</span>
+          </button>
+        </div>
       </div>
     </div>
-
-    {% include "partials/field.html" with field=form.price_mode %}
-    <div class="{% if form.price_usd.errors %}has-error{% endif %}">
-      {% translate "Partiyaning umumiy narxi (USD $)" as t_total_price %}{% translate "Bir birlik narxi (USD $)" as t_unit_price %}
-      <label class="field-label" for="{{ form.price_usd.id_for_label }}"><span x-text="mode === 'total' ? '{{ t_total_price|escapejs }}' : '{{ t_unit_price|escapejs }}'">{% translate "Narx (USD $)" %}</span></label>
-      <input type="number" name="{{ form.price_usd.html_name }}" id="{{ form.price_usd.id_for_label }}" step="0.01" :step="mode === 'total' ? '0.01' : '0.0001'" min="0" inputmode="decimal" required
-             x-model.number="price" value="{{ form.price_usd.value|default_if_none:'' }}">
-      {% for e in form.price_usd.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
-    </div>
-    {% include "partials/field.html" with field=form.notes %}
-
-    <div class="rounded-[6px] bg-raised px-4 py-3" x-show="m && qty && p" x-cloak>
-      <dl class="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1.5 num">
-        <dt class="text-muted">{% translate "Bir birlik narxi" %}</dt><dd class="text-right" x-text="usd(unit, 4)"></dd>
-        <dt class="text-muted">{% translate "Partiya jami" %}</dt><dd class="text-right font-semibold" x-text="usd(total)"></dd>
-        <dt class="text-muted">{% translate "Kirimdan keyin omborda" %}</dt><dd class="text-right" x-text="n(stock + qty) + ' ' + (m ? m.unit : '')"></dd>
-        <dt class="text-muted">{% translate "Yangi o'rtacha narx" %}</dt><dd class="text-right" x-text="avg !== null ? usd(avg, 4) : '—'"></dd>
-      </dl>
-    </div>
-
-    <button type="submit" class="btn btn-primary btn-lg btn-block">{% icon "arrival" 18 %} {% translate "Kirimni saqlash" %}</button>
   </form>
 
-  <section class="panel overflow-hidden" aria-labelledby="recent-kirim">
-    <div class="panel-head"><h2 id="recent-kirim" class="panel-title">{% translate "Oxirgi kirimlar" %}</h2></div>
+  {# =================== BOTTOM: RECENT KIRIM EXCEL DATA GRID =================== #}
+  <div class="panel mt-6 overflow-hidden shadow-xs">
+    <div class="panel-head border-b border-line px-5 py-3.5 flex items-center justify-between bg-surface">
+      <div class="flex items-center gap-2">
+        <h2 class="font-semibold text-ink text-[15px]">{% translate "Oxirgi kirimlar" %}</h2>
+        {% if recent_kirim %}<span class="pill pill-neutral font-medium">{{ recent_kirim|length }}</span>{% endif %}
+      </div>
+    </div>
+
     {% if recent_kirim %}
-    <ul>
-      {% for t in recent_kirim %}
-      <li class="grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 border-t border-rule px-5 py-2.5">
-        <div class="min-w-0">
-          <p class="truncate font-medium">{{ t.material.name }}</p>
-          <p class="truncate text-muted" style="font-size:13px">{{ t.created_at|date:"j E, H:i" }}{% if t.notes %} · {{ t.notes }}{% endif %}</p>
+    {# Desktop Grid Table #}
+    <div class="hidden md:block overflow-x-auto">
+      <table class="grid-table">
+        <thead>
+          <tr>
+            <th class="w-[160px] min-w-[150px] text-left">{% translate "Vaqti" %}</th>
+            <th class="min-w-[200px] text-left">{% translate "Material nomi" %}</th>
+            <th class="w-[140px] min-w-[120px] text-left">{% translate "Kategoriya" %}</th>
+            <th class="w-[150px] min-w-[130px] text-right">{% translate "Miqdor" %}</th>
+            <th class="w-[140px] min-w-[120px] text-right">{% translate "Bir birlik narxi" %}</th>
+            <th class="w-[150px] min-w-[130px] text-right">{% translate "Jami" %}</th>
+            <th class="min-w-[180px] text-left">{% translate "Izoh" %}</th>
+            <th class="w-[150px] min-w-[130px] text-left">{% translate "Ishchi" %}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for t in recent_kirim %}{% with m=t.material %}
+          <tr>
+            {# 1. Vaqti #}
+            <td class="whitespace-nowrap text-xs text-muted font-mono">
+              <span class="inline-flex items-center gap-1.5">
+                {% icon "clock" 13 "text-muted flex-none" %}
+                <span>{{ t.created_at|date:"j E, H:i" }}</span>
+              </span>
+            </td>
+
+            {# 2. Material nomi #}
+            <td class="font-medium text-ink">
+              <span class="block text-[14px] leading-snug">{{ m.name }}</span>
+            </td>
+
+            {# 3. Kategoriya #}
+            <td class="whitespace-nowrap">
+              <span class="inline-flex items-center rounded border border-line/70 bg-raised px-2 py-0.5 text-xs font-medium text-muted">
+                {{ m.category|cat_label }}
+              </span>
+            </td>
+
+            {# 4. Miqdor #}
+            <td class="text-right whitespace-nowrap font-mono text-[13.5px] font-semibold text-accent">
+              +{{ t.quantity_changed|qty }} <span class="text-xs text-muted font-sans font-normal">{{ m.unit_short }}</span>
+            </td>
+
+            {# 5. Birlik narxi #}
+            <td class="text-right whitespace-nowrap font-mono text-xs text-muted">
+              {{ t.unit_price_usd|usd:4 }}
+            </td>
+
+            {# 6. Jami summa #}
+            <td class="text-right whitespace-nowrap font-mono text-[13.5px] font-semibold text-ink">
+              {{ t.total_price_usd|usd }}
+            </td>
+
+            {# 7. Izoh #}
+            <td class="text-xs text-muted truncate max-w-[220px]" title="{{ t.notes }}">
+              {{ t.notes|default:"—" }}
+            </td>
+
+            {# 8. Ishchi #}
+            <td class="whitespace-nowrap text-xs text-muted">
+              {{ t.user.display_name|default:t.user.username }}
+            </td>
+          </tr>
+          {% endwith %}{% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {# Mobile List #}
+    <ul class="md:hidden divide-y divide-rule">
+      {% for t in recent_kirim %}{% with m=t.material %}
+      <li class="p-4 flex items-center justify-between gap-3">
+        <div class="min-w-0 flex-1">
+          <p class="font-medium text-ink text-sm truncate">{{ m.name }}</p>
+          <p class="text-xs text-muted mt-0.5 font-mono">{{ t.created_at|date:"j E, H:i" }}{% if t.notes %} · {{ t.notes }}{% endif %}</p>
         </div>
-        <div class="num text-right">
-          <p class="font-semibold">{{ t.total_price_usd|usd }}</p>
-          <p class="text-muted" style="font-size:13px">+{{ t.quantity_changed|qty }} {{ t.material.unit_short }}</p>
+        <div class="text-right font-mono text-xs flex-none">
+          <p class="font-bold text-ink text-sm">{{ t.total_price_usd|usd }}</p>
+          <p class="text-accent font-semibold mt-0.5">+{{ t.quantity_changed|qty }} {{ m.unit_short }}</p>
         </div>
       </li>
-      {% endfor %}
+      {% endwith %}{% endfor %}
     </ul>
+
     {% else %}
-      <p class="border-t border-rule px-5 py-5 text-muted">{% translate "Hali kirim yozilmagan." %}</p>
+      <div class="px-5 py-8 text-center text-muted text-sm">
+        {% translate "Hali kirim yozilmagan." %}
+      </div>
     {% endif %}
-  </section>
+  </div>
+
 </div>
 {% endblock %}
