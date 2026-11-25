@@ -12,6 +12,7 @@ from django.utils.translation import gettext as _
 from django.views import View
 from django.views.generic import CreateView, FormView, ListView, TemplateView, UpdateView
 
+from apps.users.models import worker_role_choices
 from apps.users.permissions import (
     ApprovedUserRequiredMixin,
     StockTakerRequiredMixin,
@@ -32,14 +33,17 @@ from .forms import (
 )
 from .models import (
     BaseMaterial,
+    Category,
     InventoryTransaction,
     LeftoverOffcut,
+    MeasurementUnit,
     category_choices,
     category_codes,
     default_roles_for_category,
     expense_category_label,
     offcut_category_codes,
     transaction_type_label,
+    unit_short_label,
 )
 
 
@@ -305,14 +309,56 @@ class MaterialListView(WarehouseAdminRequiredMixin, ListView):
         return context
 
 
-class MaterialCreateView(WarehouseAdminRequiredMixin, CreateView):
-    form_class = MaterialForm
-    template_name = "inventory/material_form.html"
+DEFAULT_CATEGORY_UNITS = {
+    "HARDWARE": MeasurementUnit.PIECE.value,
+    "UPAKOVKA": MeasurementUnit.PIECE.value,
+    "KRASKA": MeasurementUnit.LITER.value,
+    "GRUNTOFKA": MeasurementUnit.LITER.value,
+    "LIQUID": MeasurementUnit.LITER.value,
+    "LMDF": MeasurementUnit.PIECE.value,
+    "LDSP": MeasurementUnit.PIECE.value,
+    "FANER": MeasurementUnit.PIECE.value,
+    "DSP": MeasurementUnit.PIECE.value,
+    "SHEET": MeasurementUnit.PIECE.value,
+    "PVC": MeasurementUnit.METER.value,
+    "LINEAR": MeasurementUnit.METER.value,
+}
+
+
+class MaterialFormContextMixin:
+    """Shared smart-grid context for MaterialCreateView and MaterialUpdateView."""
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        form = context["form"]
+        cats = list(Category.objects.all())
         context["offcut_categories"] = sorted(offcut_category_codes())
+        context["worker_roles_meta"] = [
+            {"code": str(code), "label": str(label).split(" (")[0]}
+            for code, label in worker_role_choices()
+        ]
+        context["unit_labels_meta"] = {
+            unit.value: str(unit_short_label(unit.value))
+            for unit in MeasurementUnit
+        }
+        context["category_defaults"] = {
+            cat.code: {
+                "roles": default_roles_for_category(cat.code),
+                "offcut": bool(cat.supports_offcuts),
+                "unit": DEFAULT_CATEGORY_UNITS.get(cat.code, ""),
+            }
+            for cat in cats
+        }
+        context["initial_roles"] = [str(r) for r in (form["allowed_roles"].value() or [])]
+        context["recent_materials"] = (
+            BaseMaterial.objects.select_related("whole_stock").order_by("-created_at", "-id")[:12]
+        )
         return context
+
+
+class MaterialCreateView(WarehouseAdminRequiredMixin, MaterialFormContextMixin, CreateView):
+    form_class = MaterialForm
+    template_name = "inventory/material_form.html"
 
     def form_valid(self, form):
         data = form.cleaned_data
@@ -336,16 +382,11 @@ class MaterialCreateView(WarehouseAdminRequiredMixin, CreateView):
         return redirect(reverse("inventory:kirim") + f"?material={material.pk}")
 
 
-class MaterialUpdateView(WarehouseAdminRequiredMixin, UpdateView):
+class MaterialUpdateView(WarehouseAdminRequiredMixin, MaterialFormContextMixin, UpdateView):
     model = BaseMaterial
     form_class = MaterialForm
     template_name = "inventory/material_form.html"
     context_object_name = "material"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["offcut_categories"] = sorted(offcut_category_codes())
-        return context
 
     def form_valid(self, form):
         material = form.save(commit=False)

@@ -3,130 +3,557 @@
 {% block title %}{% if material %}{{ material.name }}{% else %}{% translate "Yangi material" %}{% endif %}{% endblock %}
 {% block content %}
 {{ offcut_categories|json_script:"offcut-categories" }}
-<a href="{% url 'inventory:material_list' %}" class="inline-flex items-center gap-1.5 text-muted hover:text-ink">{% icon "back" %} {% translate "Materiallar" %}</a>
-<h1 class="mt-3 font-bold text-[24px] leading-8 lg:text-[32px] lg:leading-10">{% if material %}{{ material.name }}{% else %}{% translate "Yangi material" %}{% endif %}</h1>
-<p class="mt-1 text-muted" style="font-size:15px">{% if material %}{% blocktranslate with price=material.unit_price_usd|usd:4 unit=material.unit_short %}Narx kirim orqali o'rtacha hisoblanadi: hozir {{ price }} / {{ unit }}{% endblocktranslate %}{% else %}{% translate "Kartani yarating, keyin kirim bilan miqdor va narxni kiriting." %}{% endif %}</p>
+{{ worker_roles_meta|json_script:"worker-roles-meta" }}
+{{ unit_labels_meta|json_script:"unit-labels-meta" }}
+{{ category_defaults|json_script:"category-defaults" }}
+{{ initial_roles|json_script:"initial-roles" }}
 
-<form method="post" class="mt-6 grid gap-6 lg:grid-cols-12 items-start" novalidate
-      x-data="{
-        category: '{{ form.category.value|default_if_none:''|escapejs }}',
-        offcutCats: JSON.parse(document.getElementById('offcut-categories').textContent || '[]'),
-        newSupportsOffcuts: {% if form.new_category_supports_offcuts.value %}true{% else %}false{% endif %},
-        hasSavedDims: {% if form.length_mm.value %}true{% else %}false{% endif %},
-        dimUnit: '{{ form.dim_unit.value|default_if_none:'mm'|escapejs }}',
-        get showDims() {
-          return this.offcutCats.includes(this.category)
-            || (this.category === '__other__' && this.newSupportsOffcuts)
-            || this.hasSavedDims;
-        }
-      }">
-  {% csrf_token %}
-  {% if form.non_field_errors %}
-  <div class="lg:col-span-12">{% include "partials/form_errors.html" %}</div>
-  {% endif %}
+{# Header #}
+<div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+  <div>
+    <a href="{% url 'inventory:material_list' %}" class="inline-flex items-center gap-1.5 text-xs text-muted hover:text-ink">
+      {% icon "back" 14 %} {% translate "Materiallar" %}
+    </a>
+    <h1 class="mt-1 font-bold text-[24px] leading-8 lg:text-[30px] lg:leading-9 text-ink">
+      {% if material %}{{ material.name }}{% else %}{% translate "Yangi material" %}{% endif %}
+    </h1>
+    <p class="mt-0.5 text-muted" style="font-size:14px">
+      {% if material %}
+        {% blocktranslate with price=material.unit_price_usd|usd:4 unit=material.unit_short %}Narx kirim orqali o'rtacha hisoblanadi: hozir {{ price }} / {{ unit }}{% endblocktranslate %}
+      {% else %}
+        {% translate "Kartani yarating, keyin kirim bilan miqdor va narxni kiriting." %}
+      {% endif %}
+    </p>
+  </div>
+  <div class="flex items-center gap-2">
+    {% if material %}
+      <a href="{% url 'inventory:material_list' %}" class="btn btn-secondary min-h-10 px-3.5 text-xs font-medium">
+        {% translate "Bekor qilish" %}
+      </a>
+    {% else %}
+      <a href="{% url 'inventory:material_list' %}" class="btn btn-secondary min-h-10 px-3.5 text-xs font-medium">
+        {% translate "Barcha materiallar" %} &rarr;
+      </a>
+    {% endif %}
+  </div>
+</div>
 
-  {# ---- Left column: Core & Sizing (7 cols) ---- #}
-  <div class="lg:col-span-7 grid gap-6">
-    <section class="panel p-5 sm:p-6">
-      <div class="border-b border-line/70 pb-4 mb-5">
-        <h2 class="panel-title">{% translate "Asosiy" %}</h2>
-        <p class="mt-1 text-muted" style="font-size:13px">{% translate "Nomi ishchilar ro'yxatda ko'radigan ko'rinishda bo'lsin: “MDF 16 mm oq”." %}</p>
+<div class="mt-5"
+     x-data="{
+       isDesktop: window.innerWidth >= 768,
+       isEdit: {% if material %}true{% else %}false{% endif %},
+       offcutCats: JSON.parse(document.getElementById('offcut-categories').textContent || '[]'),
+       workerRoles: JSON.parse(document.getElementById('worker-roles-meta').textContent || '[]'),
+       unitLabels: JSON.parse(document.getElementById('unit-labels-meta').textContent || '{}'),
+       catDefaults: JSON.parse(document.getElementById('category-defaults').textContent || '{}'),
+       category: '{{ form.category.value|default_if_none:''|escapejs }}',
+       unit: '{{ form.unit_of_measure.value|default_if_none:''|escapejs }}',
+       unitTouched: {% if form.unit_of_measure.value %}true{% else %}false{% endif %},
+       selectedRoles: JSON.parse(document.getElementById('initial-roles').textContent || '[]'),
+       rolesTouched: {% if material %}true{% else %}false{% endif %},
+       newSupportsOffcuts: {% if form.new_category_supports_offcuts.value %}true{% else %}false{% endif %},
+       forceDims: {% if form.length_mm.value %}true{% else %}false{% endif %},
+       dimUnit: '{{ form.dim_unit.value|default_if_none:'mm'|escapejs }}',
+       isActive: {% if form.is_active and not form.is_active.value %}false{% else %}true{% endif %},
+       rolesOpen: false,
+       dropdownStyle: '',
+       get showDims() {
+         return this.offcutCats.includes(this.category)
+           || (this.category === '__other__' && this.newSupportsOffcuts)
+           || this.forceDims;
+       },
+       get unitShort() {
+         return this.unitLabels[this.unit] || '';
+       },
+       get selectedRoleLabels() {
+         const map = Object.fromEntries(this.workerRoles.map(r => [r.code, r.label]));
+         return this.selectedRoles.map(c => map[c] || c);
+       },
+       onCategoryChange() {
+         const def = this.catDefaults[this.category];
+         if (def) {
+           if (!this.isEdit && !this.rolesTouched) {
+             this.selectedRoles = [...def.roles];
+           }
+           if (!this.isEdit && !this.unitTouched && def.unit) {
+             this.unit = def.unit;
+           }
+         }
+       },
+       toggleRole(code) {
+         this.rolesTouched = true;
+         if (this.selectedRoles.includes(code)) {
+           this.selectedRoles = this.selectedRoles.filter(r => r !== code);
+         } else {
+           this.selectedRoles = [...this.selectedRoles, code];
+         }
+       },
+       selectAllRoles() {
+         this.rolesTouched = true;
+         this.selectedRoles = this.workerRoles.map(r => r.code);
+       },
+       resetDefaultRoles() {
+         const def = this.catDefaults[this.category];
+         this.rolesTouched = false;
+         this.selectedRoles = def ? [...def.roles] : [];
+       },
+       clearRoles() {
+         this.rolesTouched = true;
+         this.selectedRoles = [];
+       },
+       toggleRolesDropdown(btn) {
+         if (this.rolesOpen) {
+           this.rolesOpen = false;
+           return;
+         }
+         this.positionDropdown(btn);
+         this.rolesOpen = true;
+       },
+       positionDropdown(btn) {
+         if (!btn) return;
+         const rect = btn.getBoundingClientRect();
+         const width = Math.max(rect.width, 270);
+         const left = Math.min(rect.left, window.innerWidth - width - 16);
+         const spaceBelow = window.innerHeight - rect.bottom;
+         const top = spaceBelow > 290 ? (rect.bottom + 6) : Math.max(12, rect.top - 290);
+         this.dropdownStyle = `top:${Math.round(top)}px;left:${Math.round(Math.max(12, left))}px;width:${Math.round(width)}px;`;
+       }
+     }"
+     @resize.window="isDesktop = window.innerWidth >= 768; rolesOpen = false;"
+     @scroll.window="if (rolesOpen) rolesOpen = false;"
+     @keydown.escape.window="rolesOpen = false">
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {% include "partials/form_errors.html" %}
+
+    {# =================== UNIFIED SMART DATA GRID =================== #}
+    <div class="panel overflow-hidden shadow-xs">
+      {# Desktop Excel Table #}
+      <div class="hidden md:block overflow-x-auto">
+        <table class="grid-table">
+          <thead>
+            <tr>
+              <th class="min-w-[200px] text-left">{% translate "Material nomi" %}</th>
+              <th class="w-[155px] min-w-[145px] text-left">{% translate "Kategoriya" %}</th>
+              <th class="w-[130px] min-w-[120px] text-left">{% translate "Birlik" %}</th>
+              <th class="w-[220px] min-w-[210px] text-left">{% translate "O'lchami" %}</th>
+              <th class="w-[125px] min-w-[115px] text-left">{% translate "Idish / Qadoq" %}</th>
+              <th class="w-[125px] min-w-[115px] text-left">{% translate "Minimal" %}</th>
+              <th class="w-[220px] min-w-[200px] text-left">{% translate "Kim ko'radi va oladi" %}</th>
+              <th class="w-[100px] min-w-[90px] text-center">{% translate "Holati" %}</th>
+              <th class="w-[165px] min-w-[155px] text-right">{% translate "Amal" %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {# ---------------- ROW 1: ACTIVE SMART INPUT ROW ---------------- #}
+            <tr class="bg-accent/[0.04] hover:bg-accent/[0.07] transition-colors border-b-2 border-accent/30">
+              {# 1. Nomi #}
+              <td class="px-4 py-3 align-top">
+                <input type="text"
+                       name="{{ form.name.html_name }}"
+                       id="{{ form.name.id_for_label }}"
+                       value="{{ form.name.value|default_if_none:'' }}"
+                       :disabled="!isDesktop"
+                       class="control !h-9 text-xs sm:text-sm w-full"
+                       placeholder="LMDF 18 mm oq"
+                       required>
+                {% for e in form.name.errors %}<p class="field-error text-xs mt-1">{{ e }}</p>{% endfor %}
+              </td>
+
+              {# 2. Kategoriya #}
+              <td class="px-3 py-3 align-top">
+                <select name="{{ form.category.html_name }}"
+                        id="{{ form.category.id_for_label }}"
+                        x-model="category"
+                        @change="onCategoryChange()"
+                        :disabled="!isDesktop"
+                        class="control !h-9 text-xs sm:text-sm w-full"
+                        required>
+                  {% for value, label in form.category.field.choices %}<option value="{{ value }}" {% if form.category.value == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+                </select>
+                {% for e in form.category.errors %}<p class="field-error text-xs mt-1">{{ e }}</p>{% endfor %}
+              </td>
+
+              {# 3. Birlik #}
+              <td class="px-3 py-3 align-top">
+                <select name="{{ form.unit_of_measure.html_name }}"
+                        id="{{ form.unit_of_measure.id_for_label }}"
+                        x-model="unit"
+                        @change="unitTouched = true"
+                        :disabled="!isDesktop"
+                        class="control !h-9 text-xs sm:text-sm w-full"
+                        required>
+                  {% for value, label in form.unit_of_measure.field.choices %}
+                    <option value="{{ value }}" {% if form.unit_of_measure.value == value %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+                {% for e in form.unit_of_measure.errors %}<p class="field-error text-xs mt-1">{{ e }}</p>{% endfor %}
+              </td>
+
+              {# 4. O'lchami (Smart mm/sm inline pair) #}
+              <td class="px-3 py-3 align-top">
+                <div x-show="showDims" x-cloak class="space-y-1.5">
+                  <div class="flex items-center gap-1">
+                    <input type="hidden" name="{{ form.dim_unit.html_name }}" :value="dimUnit" :disabled="!isDesktop">
+                    <input type="number"
+                           name="{{ form.length_mm.html_name }}"
+                           id="{{ form.length_mm.id_for_label }}"
+                           min="1" max="100000" inputmode="numeric"
+                           value="{{ form.length_mm.value|default_if_none:'' }}"
+                           :disabled="!isDesktop"
+                           class="control !h-9 text-xs font-mono px-2 w-[72px]"
+                           :placeholder="dimUnit === 'sm' ? '275' : '2750'">
+                    <span class="text-xs text-muted select-none">×</span>
+                    <input type="number"
+                           name="{{ form.width_mm.html_name }}"
+                           id="{{ form.width_mm.id_for_label }}"
+                           min="1" max="100000" inputmode="numeric"
+                           value="{{ form.width_mm.value|default_if_none:'' }}"
+                           :disabled="!isDesktop"
+                           class="control !h-9 text-xs font-mono px-2 w-[72px]"
+                           :placeholder="dimUnit === 'sm' ? '183' : '1830'">
+                    <button type="button"
+                            @click="dimUnit = dimUnit === 'mm' ? 'sm' : 'mm'"
+                            class="h-9 px-2 rounded border border-control bg-surface text-[11px] font-mono font-semibold text-ink hover:bg-raised transition-colors cursor-pointer"
+                            title="{% translate "O'lcham birligi" %}"
+                            x-text="dimUnit">
+                    </button>
+                  </div>
+                  {% for e in form.length_mm.errors %}<p class="field-error text-xs">{{ e }}</p>{% endfor %}
+                  {% for e in form.width_mm.errors %}<p class="field-error text-xs">{{ e }}</p>{% endfor %}
+                </div>
+                <div x-show="!showDims" class="flex items-center justify-between h-9 px-1 text-xs text-muted">
+                  <span>—</span>
+                  <button type="button" @click="forceDims = true" class="text-[11px] text-muted hover:text-ink underline decoration-dotted cursor-pointer">
+                    + {% translate "O'lchami" %}
+                  </button>
+                </div>
+              </td>
+
+              {# 5. Idish / Qadoq #}
+              <td class="px-3 py-3 align-top">
+                <div class="relative">
+                  <input type="number"
+                         name="{{ form.container_size.html_name }}"
+                         id="{{ form.container_size.id_for_label }}"
+                         min="1" max="10000000" step="1" inputmode="numeric"
+                         value="{{ form.container_size.value|default_if_none:'' }}"
+                         :disabled="!isDesktop"
+                         class="control !h-9 text-xs font-mono pr-10 w-full"
+                         placeholder="12">
+                  <span class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] text-muted font-medium" x-text="unitShort"></span>
+                </div>
+                {% for e in form.container_size.errors %}<p class="field-error text-xs mt-1">{{ e }}</p>{% endfor %}
+              </td>
+
+              {# 6. Minimal #}
+              <td class="px-3 py-3 align-top">
+                <div class="relative">
+                  <input type="number"
+                         name="{{ form.minimum_threshold.html_name }}"
+                         id="{{ form.minimum_threshold.id_for_label }}"
+                         min="0" max="1000000000" step="1" inputmode="numeric"
+                         value="{{ form.minimum_threshold.value|default_if_none:'0' }}"
+                         :disabled="!isDesktop"
+                         class="control !h-9 text-xs font-mono pr-10 w-full"
+                         placeholder="0"
+                         required>
+                  <span class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] text-muted font-medium" x-text="unitShort"></span>
+                </div>
+                {% for e in form.minimum_threshold.errors %}<p class="field-error text-xs mt-1">{{ e }}</p>{% endfor %}
+              </td>
+
+              {# 7. Kimlar ko'radi va oladi (Smart Multi-Select Dropdown) #}
+              <td class="px-3 py-3 align-top">
+                <template x-for="rCode in selectedRoles" :key="rCode">
+                  <input type="hidden" name="{{ form.allowed_roles.html_name }}" :value="rCode" :disabled="!isDesktop">
+                </template>
+                <button type="button"
+                        x-ref="roleBtn"
+                        @click="toggleRolesDropdown($refs.roleBtn)"
+                        class="control !h-9 w-full flex items-center justify-between gap-2 text-left text-xs px-2.5 cursor-pointer"
+                        :class="{ 'border-ink ring-1 ring-ink': rolesOpen }"
+                        aria-haspopup="listbox"
+                        :aria-expanded="rolesOpen">
+                  <span class="truncate" :class="selectedRoleLabels.length ? 'text-ink font-medium' : 'text-muted'"
+                        x-text="selectedRoleLabels.length ? selectedRoleLabels.join(', ') : '{% translate "Kasblarni tanlang" %}'">
+                  </span>
+                  <span class="flex items-center gap-1 flex-none">
+                    <span x-show="selectedRoles.length > 0" x-cloak class="inline-flex h-4 min-w-4 items-center justify-center rounded bg-ink px-1 text-[10px] font-bold text-white" x-text="selectedRoles.length"></span>
+                    <svg class="h-3.5 w-3.5 text-muted transition-transform duration-150" :class="{ 'rotate-180': rolesOpen }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                  </span>
+                </button>
+                {% for e in form.allowed_roles.errors %}<p class="field-error text-xs mt-1">{{ e }}</p>{% endfor %}
+              </td>
+
+              {# 8. Holati #}
+              <td class="px-3 py-3 align-middle text-center whitespace-nowrap">
+                {% if form.is_active %}
+                  <label class="inline-flex items-center cursor-pointer select-none">
+                    <input type="checkbox" name="{{ form.is_active.html_name }}" x-model="isActive" :disabled="!isDesktop" class="sr-only">
+                    <span class="pill text-xs transition-colors" :class="isActive ? 'pill-pos' : 'pill-neutral'"
+                          x-text="isActive ? '{% translate "Faol" %}' : '{% translate "Arxivda" %}'"></span>
+                  </label>
+                {% else %}
+                  <span class="pill pill-pos text-xs">{% translate "Faol" %}</span>
+                {% endif %}
+              </td>
+
+              {# 9. Amal #}
+              <td class="px-4 py-3 align-top text-right whitespace-nowrap">
+                <button type="submit" class="btn btn-primary min-h-9 px-3.5 text-xs font-semibold shadow-xs inline-flex items-center gap-1.5">
+                  {% icon "plus" 15 %}
+                  <span>{% if material %}{% translate "Saqlash" %}{% else %}{% translate "Saqlash va kirim" %}{% endif %}</span>
+                </button>
+              </td>
+            </tr>
+
+            {# ---------------- SMART SUB-ROW: NEW CATEGORY ("Boshqa") ---------------- #}
+            <tr x-show="category === '__other__'" {% if form.category.value != "__other__" %}x-cloak{% endif %} class="bg-raised/70 border-b border-line">
+              <td colspan="9" class="px-5 py-3">
+                <div class="flex flex-wrap items-center gap-4">
+                  <div class="flex items-center gap-2 min-w-[260px] flex-1 max-w-md {% if form.new_category.errors %}has-error{% endif %}">
+                    <label class="text-xs font-semibold text-ink whitespace-nowrap" for="{{ form.new_category.id_for_label }}">{{ form.new_category.label }}:</label>
+                    <input type="text"
+                           name="{{ form.new_category.html_name }}"
+                           id="{{ form.new_category.id_for_label }}"
+                           value="{{ form.new_category.value|default_if_none:'' }}"
+                           :disabled="!isDesktop || category !== '__other__'"
+                           class="control !h-8 text-xs flex-1"
+                           placeholder="{% translate "Masalan: Oyna va ko'zgu" %}">
+                    {% for e in form.new_category.errors %}<span class="field-error text-xs">{{ e }}</span>{% endfor %}
+                  </div>
+                  <label class="inline-flex items-center gap-2 text-xs text-ink cursor-pointer select-none">
+                    <input type="checkbox"
+                           name="{{ form.new_category_supports_offcuts.html_name }}"
+                           id="{{ form.new_category_supports_offcuts.id_for_label }}"
+                           x-model="newSupportsOffcuts"
+                           :disabled="!isDesktop || category !== '__other__'"
+                           class="h-4 w-4 rounded border-control text-ink">
+                    <span class="font-medium">{{ form.new_category_supports_offcuts.label }}</span>
+                  </label>
+                  <span class="text-[11px] text-muted">{% translate "Belgilanmagan kasbdagi ishchilar bu materialni umuman ko'rmaydi." %}</span>
+                </div>
+              </td>
+            </tr>
+
+            {# ---------------- SECTION DIVIDER ROW ---------------- #}
+            <tr class="bg-raised/70 border-t border-b border-line text-[11px] font-semibold uppercase tracking-wider text-muted select-none">
+              <td colspan="9" class="px-5 py-2.5">
+                <div class="flex items-center justify-between">
+                  <span class="flex items-center gap-1.5 text-muted font-medium">
+                    {% icon "layers" 14 %}
+                    <span>{% translate "So'nggi materiallar" %}</span>
+                  </span>
+                  <span class="text-xs text-muted font-normal lowercase">
+                    {% if recent_materials %}{{ recent_materials|length }} ta{% else %}{% translate "Hali material qo'shilmagan." %}{% endif %}
+                  </span>
+                </div>
+              </td>
+            </tr>
+
+            {# ---------------- EXISTING MATERIALS ROWS ---------------- #}
+            {% for m in recent_materials %}{% with st=m.whole_stock %}
+            <tr class="hover:bg-raised/40 transition-colors">
+              <td class="px-4 py-3 font-medium text-ink">
+                <span class="block text-[14px] leading-snug">{{ m.name }}</span>
+              </td>
+              <td class="px-3 py-3 whitespace-nowrap">
+                <span class="inline-flex items-center rounded border border-line/70 bg-raised px-2 py-0.5 text-xs font-medium text-muted">
+                  {{ m.category|cat_label }}
+                </span>
+              </td>
+              <td class="px-3 py-3 text-xs text-muted whitespace-nowrap">
+                {{ m.unit_short }}
+              </td>
+              <td class="px-3 py-3 whitespace-nowrap text-xs font-mono text-ink">
+                {% if st.length_mm %}
+                  {{ st.length_mm }} × {{ st.width_mm }} <span class="text-muted font-sans">{% translate "mm" %}</span>
+                {% else %}
+                  <span class="text-muted">—</span>
+                {% endif %}
+              </td>
+              <td class="px-3 py-3 whitespace-nowrap text-xs font-mono text-ink">
+                {% if m.container_size %}
+                  {{ m.container_size|qty }} <span class="text-muted font-sans">{{ m.unit_short }}</span>
+                {% else %}
+                  <span class="text-muted">—</span>
+                {% endif %}
+              </td>
+              <td class="px-3 py-3 whitespace-nowrap text-xs font-mono text-ink">
+                {% if m.minimum_threshold > 0 %}
+                  {{ m.minimum_threshold|qty }} <span class="text-muted font-sans">{{ m.unit_short }}</span>
+                {% else %}
+                  <span class="text-muted">—</span>
+                {% endif %}
+              </td>
+              <td class="px-3 py-3">
+                <div class="flex flex-wrap gap-1 max-w-[220px]">
+                  {% for r in m.allowed_roles %}
+                    <span class="inline-flex items-center rounded border border-line/60 bg-raised px-1.5 py-0.5 text-[11px] font-medium text-ink">
+                      {{ r|short_role }}
+                    </span>
+                  {% empty %}
+                    <span class="text-muted">—</span>
+                  {% endfor %}
+                </div>
+              </td>
+              <td class="px-3 py-3 text-center whitespace-nowrap">
+                {% if m.is_active %}
+                  <span class="pill pill-pos text-xs">{% translate "Faol" %}</span>
+                {% else %}
+                  <span class="pill pill-neutral text-xs">{% translate "Arxivda" %}</span>
+                {% endif %}
+              </td>
+              <td class="px-4 py-3 text-right whitespace-nowrap">
+                <div class="inline-flex items-center gap-1.5 justify-end">
+                  <a href="{% url 'inventory:material_edit' m.pk %}" class="btn btn-secondary min-h-8 px-2.5 text-xs font-medium inline-flex items-center gap-1">
+                    {% icon "edit" 13 %} <span>{% translate "Tahrirlash" %}</span>
+                  </a>
+                  <a href="{% url 'inventory:kirim' %}?material={{ m.pk }}" class="btn btn-primary min-h-8 px-2.5 text-xs font-medium inline-flex items-center gap-1">
+                    {% icon "plus" 13 %} <span>{% translate "Kirim" %}</span>
+                  </a>
+                </div>
+              </td>
+            </tr>
+            {% endwith %}{% empty %}
+            <tr>
+              <td colspan="9" class="px-5 py-8 text-center text-muted text-sm">
+                {% translate "Hali material qo'shilmagan." %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
-      <div class="form-stack">
-        {% include "partials/field.html" with field=form.name %}
-        <div class="grid gap-4 sm:grid-cols-2">
-          <div class="{% if form.category.errors %}has-error{% endif %}">
-            <label class="field-label" for="{{ form.category.id_for_label }}">{{ form.category.label }}</label>
-            <select name="{{ form.category.html_name }}" id="{{ form.category.id_for_label }}" x-model="category">
+
+      {# Floating Smart Role Dropdown Portal (never clipped by table scroll!) #}
+      <template x-teleport="body">
+        <div x-show="rolesOpen"
+             x-cloak
+             @click.outside="if (!$refs.roleBtn || !$refs.roleBtn.contains($event.target)) rolesOpen = false"
+             :style="dropdownStyle"
+             class="fixed z-50 rounded-xl border border-line bg-surface p-2 shadow-xl">
+          <div class="flex items-center justify-between gap-2 px-2 py-1.5 border-b border-line/60">
+            <span class="text-[11px] font-semibold uppercase tracking-wider text-muted">{% translate "Kim ko'radi va oladi" %}</span>
+            <div class="flex items-center gap-1.5 text-[11px]">
+              <button type="button" @click="selectAllRoles()" class="text-ink hover:underline font-medium cursor-pointer">{% translate "Hammasi" %}</button>
+              <span class="text-control">·</span>
+              <button type="button" @click="resetDefaultRoles()" class="text-muted hover:text-ink cursor-pointer">{% translate "Standart" %}</button>
+              <span class="text-control">·</span>
+              <button type="button" @click="clearRoles()" class="text-muted hover:text-negative cursor-pointer">{% translate "Tozalash" %}</button>
+            </div>
+          </div>
+          <div class="mt-1 max-h-56 overflow-y-auto grid gap-0.5 p-0.5">
+            <template x-for="r in workerRoles" :key="r.code">
+              <button type="button"
+                      @click="toggleRole(r.code)"
+                      class="flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-xs transition-colors cursor-pointer text-left"
+                      :class="selectedRoles.includes(r.code) ? 'bg-raised text-ink font-semibold' : 'text-ink hover:bg-raised/50'">
+                <span x-text="r.label"></span>
+                <span class="flex h-4 w-4 items-center justify-center rounded border transition-colors"
+                      :class="selectedRoles.includes(r.code) ? 'border-ink bg-ink text-white' : 'border-control bg-surface'">
+                  <svg x-show="selectedRoles.includes(r.code)" class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                </span>
+              </button>
+            </template>
+          </div>
+          <div class="mt-1 pt-1.5 border-t border-line/60 flex justify-end px-1">
+            <button type="button" @click="rolesOpen = false" class="btn btn-primary !min-h-7 !px-3 text-xs font-medium">{% translate "Tayyor" %}</button>
+          </div>
+        </div>
+      </template>
+
+      {# Mobile Card View (md:hidden) #}
+      <div class="md:hidden p-4 form-stack bg-surface">
+        <div>
+          <label class="field-label" for="m-{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+          <input type="text" name="{{ form.name.html_name }}" id="m-{{ form.name.id_for_label }}" value="{{ form.name.value|default_if_none:'' }}" :disabled="isDesktop" class="control" placeholder="LMDF 18 mm oq" required>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="field-label" for="m-{{ form.category.id_for_label }}">{{ form.category.label }}</label>
+            <select name="{{ form.category.html_name }}" id="m-{{ form.category.id_for_label }}" x-model="category" @change="onCategoryChange()" :disabled="isDesktop" class="control" required>
               {% for value, label in form.category.field.choices %}<option value="{{ value }}" {% if form.category.value == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
             </select>
-            {% for e in form.category.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
           </div>
-          {% include "partials/field.html" with field=form.unit_of_measure %}
-        </div>
-        <div x-show="category === '__other__'" {% if form.category.value != "__other__" %}x-cloak{% endif %} class="rounded-lg border border-line bg-raised/40 p-4 form-stack {% if form.new_category.errors %}has-error{% endif %}">
           <div>
-            <label class="field-label" for="{{ form.new_category.id_for_label }}">{{ form.new_category.label }}</label>
-            {{ form.new_category }}
-            <p class="field-help">{% translate "Yangi kategoriya saqlanadi va keyingi safar ro'yxatda chiqadi. Unga kasblarni pastda belgilang." %}</p>
-            {% for e in form.new_category.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+            <label class="field-label" for="m-{{ form.unit_of_measure.id_for_label }}">{{ form.unit_of_measure.label }}</label>
+            <select name="{{ form.unit_of_measure.html_name }}" id="m-{{ form.unit_of_measure.id_for_label }}" x-model="unit" @change="unitTouched = true" :disabled="isDesktop" class="control" required>
+              {% for value, label in form.unit_of_measure.field.choices %}
+                <option value="{{ value }}" {% if form.unit_of_measure.value == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
           </div>
-          <label class="flex items-start gap-2.5 cursor-pointer text-sm">
-            <input type="checkbox" name="{{ form.new_category_supports_offcuts.html_name }}" id="{{ form.new_category_supports_offcuts.id_for_label }}" x-model="newSupportsOffcuts" class="mt-0.5 h-4 w-4 rounded border-control text-ink">
-            <span>
-              <span class="font-medium text-ink block">{{ form.new_category_supports_offcuts.label }}</span>
-              <span class="text-xs text-muted">{{ form.new_category_supports_offcuts.help_text }}</span>
-            </span>
+        </div>
+
+        <div x-show="category === '__other__'" x-cloak class="rounded-lg border border-line bg-raised/40 p-3 form-stack">
+          <div>
+            <label class="field-label" for="m-{{ form.new_category.id_for_label }}">{{ form.new_category.label }}</label>
+            <input type="text" name="{{ form.new_category.html_name }}" id="m-{{ form.new_category.id_for_label }}" value="{{ form.new_category.value|default_if_none:'' }}" :disabled="isDesktop || category !== '__other__'" class="control" placeholder="{% translate "Masalan: Oyna va ko'zgu" %}">
+          </div>
+          <label class="flex items-center gap-2 text-xs text-ink">
+            <input type="checkbox" name="{{ form.new_category_supports_offcuts.html_name }}" x-model="newSupportsOffcuts" :disabled="isDesktop || category !== '__other__'" class="h-4 w-4 rounded border-control">
+            <span>{{ form.new_category_supports_offcuts.label }}</span>
           </label>
         </div>
-      </div>
-    </section>
 
-    <section class="panel p-5 sm:p-6">
-      <div class="border-b border-line/70 pb-4 mb-5">
-        <h2 class="panel-title">{% translate "Hajm va o'lcham" %}</h2>
-        <p class="mt-1 text-muted" style="font-size:13px">{% translate "List o'lchami qoldiqlarni listga nisbatan ko'rsatish va tekshirish uchun kerak." %}</p>
-      </div>
-      <div class="form-stack">
-        <div class="grid gap-4 sm:grid-cols-2">
-          {% include "partials/field.html" with field=form.minimum_threshold %}
-          {% include "partials/field.html" with field=form.container_size %}
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="field-label" for="m-{{ form.minimum_threshold.id_for_label }}">{{ form.minimum_threshold.label }}</label>
+            <input type="number" name="{{ form.minimum_threshold.html_name }}" id="m-{{ form.minimum_threshold.id_for_label }}" min="0" step="1" value="{{ form.minimum_threshold.value|default_if_none:'0' }}" :disabled="isDesktop" class="control font-mono">
+          </div>
+          <div>
+            <label class="field-label" for="m-{{ form.container_size.id_for_label }}">{{ form.container_size.label }}</label>
+            <input type="number" name="{{ form.container_size.html_name }}" id="m-{{ form.container_size.id_for_label }}" min="1" step="1" value="{{ form.container_size.value|default_if_none:'' }}" :disabled="isDesktop" class="control font-mono">
+          </div>
         </div>
-        <div class="space-y-3" x-show="showDims" x-cloak>
-          <div class="flex items-center justify-between gap-2 pt-2 border-t border-rule">
+
+        <div x-show="showDims" x-cloak class="space-y-2 rounded-lg border border-line bg-raised/30 p-3">
+          <div class="flex items-center justify-between">
             <span class="text-xs font-medium text-muted">{% translate "O'lcham birligi" %}</span>
-            <div class="inline-flex rounded border border-control p-0.5 bg-surface shadow-2xs">
-              <label class="cursor-pointer px-2.5 py-0.5 text-xs rounded transition-colors" :class="dimUnit === 'mm' ? 'bg-ink text-white font-semibold' : 'text-muted hover:text-ink'">
-                <input type="radio" name="{{ form.dim_unit.html_name }}" value="mm" x-model="dimUnit" class="sr-only"> mm
-              </label>
-              <label class="cursor-pointer px-2.5 py-0.5 text-xs rounded transition-colors" :class="dimUnit === 'sm' ? 'bg-ink text-white font-semibold' : 'text-muted hover:text-ink'">
-                <input type="radio" name="{{ form.dim_unit.html_name }}" value="sm" x-model="dimUnit" class="sr-only"> sm
-              </label>
-            </div>
+            <button type="button" @click="dimUnit = dimUnit === 'mm' ? 'sm' : 'mm'" class="chip-sm font-mono" x-text="dimUnit"></button>
+            <input type="hidden" name="{{ form.dim_unit.html_name }}" :value="dimUnit" :disabled="isDesktop">
           </div>
-          <div class="grid gap-4 sm:grid-cols-2">
-            <div class="{% if form.length_mm.errors %}has-error{% endif %}">
-              <label class="field-label" for="{{ form.length_mm.id_for_label }}">{{ form.length_mm.label }} (<span x-text="dimUnit"></span>)</label>
-              <input type="number" name="{{ form.length_mm.html_name }}" id="{{ form.length_mm.id_for_label }}" min="1" max="100000" inputmode="numeric" value="{{ form.length_mm.value|default_if_none:'' }}" :placeholder="dimUnit === 'sm' ? '275' : '2750'">
-              <p class="field-help">{{ form.length_mm.help_text }}</p>
-              {% for e in form.length_mm.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="field-label">{{ form.length_mm.label }} (<span x-text="dimUnit"></span>)</label>
+              <input type="number" name="{{ form.length_mm.html_name }}" min="1" value="{{ form.length_mm.value|default_if_none:'' }}" :disabled="isDesktop" class="control font-mono">
             </div>
-            <div class="{% if form.width_mm.errors %}has-error{% endif %}">
-              <label class="field-label" for="{{ form.width_mm.id_for_label }}">{{ form.width_mm.label }} (<span x-text="dimUnit"></span>)</label>
-              <input type="number" name="{{ form.width_mm.html_name }}" id="{{ form.width_mm.id_for_label }}" min="1" max="100000" inputmode="numeric" value="{{ form.width_mm.value|default_if_none:'' }}" :placeholder="dimUnit === 'sm' ? '183' : '1830'">
-              <p class="field-help">{{ form.width_mm.help_text }}</p>
-              {% for e in form.width_mm.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+            <div>
+              <label class="field-label">{{ form.width_mm.label }} (<span x-text="dimUnit"></span>)</label>
+              <input type="number" name="{{ form.width_mm.html_name }}" min="1" value="{{ form.width_mm.value|default_if_none:'' }}" :disabled="isDesktop" class="control font-mono">
             </div>
           </div>
         </div>
-      </div>
-    </section>
-  </div>
 
-  {# ---- Right column: Access & Actions (5 cols) ---- #}
-  <div class="lg:col-span-5 grid gap-6">
-    <section class="panel p-5 sm:p-6">
-      <div class="border-b border-line/70 pb-4 mb-5">
-        <h2 class="panel-title">{% translate "Kim ko'radi va oladi" %}</h2>
-        <p class="mt-1 text-muted" style="font-size:13px">{% translate "Belgilanmagan kasbdagi ishchilar bu materialni umuman ko'rmaydi." %}</p>
-      </div>
-      <div class="form-stack">{% include "partials/field.html" with field=form.allowed_roles %}</div>
-    </section>
+        <div>
+          <label class="field-label">{{ form.allowed_roles.label }}</label>
+          <div class="flex flex-wrap gap-1.5">
+            <template x-for="r in workerRoles" :key="'m-'+r.code">
+              <label class="chip-sm cursor-pointer select-none" :class="selectedRoles.includes(r.code) ? '!bg-ink !text-white !border-ink' : ''">
+                <input type="checkbox" name="{{ form.allowed_roles.html_name }}" :value="r.code" :checked="selectedRoles.includes(r.code)" @change="toggleRole(r.code)" :disabled="isDesktop" class="sr-only">
+                <span x-text="r.label"></span>
+              </label>
+            </template>
+          </div>
+        </div>
 
-    {% if form.is_active %}
-    <section class="panel p-5 sm:p-6">
-      <div class="border-b border-line/70 pb-4 mb-4">
-        <h2 class="panel-title">{% translate "Holati" %}</h2>
-        <p class="mt-1 text-muted" style="font-size:13px">{% translate "Material o'chirilmaydi — tarix saqlanib qolishi uchun arxivlanadi." %}</p>
-      </div>
-      <div class="form-stack">{% include "partials/field.html" with field=form.is_active %}</div>
-    </section>
-    {% endif %}
+        {% if form.is_active %}
+        <label class="flex items-center gap-2 text-sm text-ink">
+          <input type="checkbox" name="{{ form.is_active.html_name }}" x-model="isActive" :disabled="isDesktop" class="h-4 w-4 rounded border-control">
+          <span>{{ form.is_active.label }}</span>
+        </label>
+        {% endif %}
 
-    <div class="panel p-5 sm:p-6 bg-raised/30 flex flex-col gap-3">
-      <button type="submit" class="btn btn-primary btn-lg btn-block shadow-xs">{% if material %}{% translate "Saqlash" %}{% else %}{% translate "Yaratish va kirimga o'tish" %}{% endif %}</button>
-      <a href="{% url 'inventory:material_list' %}" class="btn btn-secondary btn-lg btn-block">{% translate "Bekor qilish" %}</a>
+        <button type="submit" class="btn btn-primary btn-block min-h-10 text-xs font-semibold">
+          {% icon "plus" 16 %}
+          <span>{% if material %}{% translate "Saqlash" %}{% else %}{% translate "Saqlash va kirim" %}{% endif %}</span>
+        </button>
+      </div>
     </div>
-  </div>
-</form>
+  </form>
+</div>
 {% endblock %}
