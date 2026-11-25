@@ -112,28 +112,6 @@
         <img src="{% static 'img/profur-logo-black.png' %}" alt="Profur" class="h-[20px] w-auto max-w-[115px] object-contain">
       </a>
 
-      {# Desktop breadcrumbs #}
-      <div class="hidden lg:flex items-center gap-2 text-xs font-medium text-muted">
-        <a href="{% url 'inventory:home' %}" class="hover:text-ink cursor-pointer">{% translate "Ombor" %}</a>
-        {% block breadcrumbs %}
-          {% if nav_section and nav_section != "home" %}
-            <svg class="w-3.5 h-3.5 text-control" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-            <span class="font-bold text-ink">
-              {% if nav_section == "offcut_add" %}{% translate "Qoldiq qo'shish" %}
-              {% elif nav_section == "my_history" %}{% translate "Mening tarixim" %}
-              {% elif nav_section == "dashboard" %}{% translate "Panel" %}
-              {% elif nav_section == "kirim" %}{% translate "Kirim" %}
-              {% elif nav_section == "materials" %}{% translate "Materiallar" %}
-              {% elif nav_section == "expenses" %}{% translate "Xarajatlar" %}
-              {% elif nav_section == "reports" %}{% translate "Oylik hisobot" %}
-              {% elif nav_section == "pending_users" %}{% translate "So'rovlar" %}
-              {% elif nav_section == "users" %}{% translate "Ishchilar" %}
-              {% endif %}
-            </span>
-          {% endif %}
-        {% endblock %}
-      </div>
-
       <div class="ml-auto flex h-full items-center gap-2 sm:gap-3">
         {% if user.is_warehouse_admin %}
           <a href="{% url 'inventory:dashboard' %}" class="hidden sm:flex items-baseline gap-2 whitespace-nowrap mr-1" title="{% translate 'Ombordagi butun materiallarning joriy qiymati' %}">
