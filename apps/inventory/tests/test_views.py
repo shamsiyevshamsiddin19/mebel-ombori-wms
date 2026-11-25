@@ -215,6 +215,25 @@ class KirimViewTests(WorkshopTestCase):
         entry = InventoryTransaction.objects.kirim().order_by("-pk").first()
         self.assertEqual((entry.material, entry.quantity_changed, entry.unit_price_usd), (self.paint, Decimal("24"), Decimal("4.3500")))
 
+    def test_kirim_containers_and_quantity_with_total_price(self):
+        response = self.client.post(
+            self.url,
+            {
+                "material": self.paint.pk,
+                "containers": "12",
+                "quantity": "144",
+                "price_mode": "total",
+                "price_usd": "44646",
+                "notes": "Jadval ichidagi tugmani bosganda",
+            },
+        )
+        self.assertRedirects(response, self.url)
+        entry = InventoryTransaction.objects.kirim().order_by("-pk").first()
+        self.assertEqual(entry.material, self.paint)
+        self.assertEqual(entry.quantity_changed, Decimal("144"))
+        self.assertEqual(entry.total_price_usd, Decimal("44646.00"))
+        self.assertEqual(entry.notes, "Jadval ichidagi tugmani bosganda")
+
     def test_missing_quantity_is_an_error(self):
         response = self.client.post(self.url, {"material": self.mdf.pk, "price_mode": "total", "price_usd": "10"})
         self.assertEqual(response.status_code, 200)
