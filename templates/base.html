@@ -5,7 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f9fafb">
   <title>{% block title %}{% translate "Ombor" %}{% endblock %} · {{ brand_name }}</title>
-  <link rel="icon" type="image/svg+xml" href="{% static 'img/mark.svg' %}">
+  <link rel="shortcut icon" href="{% static 'img/favicon.ico' %}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'img/favicon-32x32.png' %}">
+  <link rel="icon" type="image/png" sizes="192x192" href="{% static 'img/favicon-192x192.png' %}">
+  <link rel="apple-touch-icon" href="{% static 'img/profur-icon.png' %}">
   <link rel="preload" href="{% static 'fonts/dm-sans-latin-400-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
   <script defer src="{% static 'vendor/alpine.min.js' %}"></script>
@@ -45,11 +48,9 @@
          :class="collapsed ? 'justify-center px-2' : 'justify-between px-4'">
       
       {# Logo + Name when expanded #}
-      <a href="{% url 'inventory:home' %}" class="flex items-center gap-2.5 min-w-0" :class="{ 'lg:hidden': collapsed }">
-        <div class="flex h-7 w-7 flex-none items-center justify-center rounded-md bg-[#27272a] text-white font-bold text-xs shadow-xs">
-          P
-        </div>
-        <span class="font-bold text-white text-[15px] tracking-tight truncate">{{ brand_name }}</span>
+      <a href="{% url 'inventory:home' %}" class="flex items-center gap-2.5 min-w-0" :class="{ 'lg:hidden': collapsed }" aria-label="Profur">
+        <img src="{% static 'img/profur-icon.png' %}" alt="Profur" class="h-7 w-7 flex-none rounded-md object-contain shadow-xs">
+        <img src="{% static 'img/profur-logo-white.png' %}" alt="Profur" class="h-[21px] w-auto max-w-[115px] object-contain">
       </a>
 
       {# Sidebar toggle button #}
@@ -106,9 +107,9 @@
   <div class="flex min-w-0 flex-col">
     {# ---- Top bar ---- #}
     <header class="sticky top-0 z-30 flex h-14 flex-none items-center gap-3 border-b border-line bg-surface px-4 lg:h-16 lg:px-[29px]">
-      <a href="{% url 'inventory:home' %}" class="flex items-center gap-2 lg:hidden">
-        <div class="flex h-7 w-7 flex-none items-center justify-center rounded-md bg-ink text-white font-bold text-xs">P</div>
-        <span class="font-semibold text-ink">{{ brand_name }}</span>
+      <a href="{% url 'inventory:home' %}" class="flex items-center gap-2 lg:hidden" aria-label="Profur">
+        <img src="{% static 'img/profur-icon.png' %}" alt="Profur" class="h-7 w-7 flex-none rounded-md object-contain shadow-xs">
+        <img src="{% static 'img/profur-logo-black.png' %}" alt="Profur" class="h-[20px] w-auto max-w-[115px] object-contain">
       </a>
 
       {# Desktop breadcrumbs #}
@@ -228,7 +229,10 @@
   <div x-show="menu" x-cloak x-transition.opacity.duration.150ms class="fixed inset-0 z-40 flex flex-col bg-surface lg:hidden"
        @keydown.escape.window="menu = false" role="dialog" aria-modal="true" aria-label="{% translate 'Menyu' %}">
     <div class="flex h-14 flex-none items-center justify-between border-b border-line px-4">
-      <span class="font-semibold">{% translate "Menyu" %}</span>
+      <div class="flex items-center gap-2">
+        <img src="{% static 'img/profur-icon.png' %}" alt="Profur" class="h-6 w-6 rounded-md object-contain">
+        <img src="{% static 'img/profur-logo-black.png' %}" alt="Profur" class="h-[18px] w-auto max-w-[100px] object-contain">
+      </div>
       <button type="button" class="btn btn-ghost -mr-2 !px-2" @click="menu = false" aria-label="{% translate 'Yopish' %}">{% icon "close" 22 %}</button>
     </div>
     <div class="flex-1 overflow-y-auto px-3 py-4">
