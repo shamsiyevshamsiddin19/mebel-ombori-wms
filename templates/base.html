@@ -133,12 +133,95 @@
         {% endblock %}
       </div>
 
-      <div class="ml-auto flex h-full items-center gap-4">
+      <div class="ml-auto flex h-full items-center gap-2 sm:gap-3">
         {% if user.is_warehouse_admin %}
-          <a href="{% url 'inventory:dashboard' %}" class="flex items-baseline gap-2 whitespace-nowrap" title="{% translate 'Ombordagi butun materiallarning joriy qiymati' %}">
-            <span class="hidden text-muted sm:inline" style="font-size:12px">{% translate "Ombor qiymati" %}</span>
+          <a href="{% url 'inventory:dashboard' %}" class="hidden sm:flex items-baseline gap-2 whitespace-nowrap mr-1" title="{% translate 'Ombordagi butun materiallarning joriy qiymati' %}">
+            <span class="text-muted" style="font-size:12px">{% translate "Ombor qiymati" %}</span>
             <span class="num font-semibold text-ink">{{ nav_valuation_usd|usd }}</span>
           </a>
+
+          {# ---- 1. Mail icon: So'rovlar (Pending requests) ---- #}
+          <a href="{% url 'users:pending_users' %}"
+             class="relative flex h-9 w-9 items-center justify-center rounded-xl border border-line bg-surface hover:bg-raised text-ink transition-colors shadow-2xs"
+             title="{% translate "So'rovlar" %}{% if nav_pending_users %} ({{ nav_pending_users }}){% endif %}"
+             aria-label="{% translate "So'rovlar" %}">
+            {% icon "mail" 18 %}
+            {% if nav_pending_users %}
+              <span class="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-negative px-1 text-[10px] font-bold text-white shadow-xs">
+                {{ nav_pending_users }}
+              </span>
+            {% endif %}
+          </a>
+
+          {# ---- 2. Bell icon: Bildirishnomalar (Notifications) ---- #}
+          <div class="relative flex items-center" x-data="{ notifyOpen: false }">
+            <button type="button"
+                    @click="notifyOpen = !notifyOpen"
+                    @keydown.escape.window="notifyOpen = false"
+                    class="relative flex h-9 w-9 items-center justify-center rounded-xl border border-line bg-surface hover:bg-raised text-ink transition-colors cursor-pointer shadow-2xs"
+                    :class="{ 'bg-raised border-ink': notifyOpen }"
+                    title="{% translate 'Bildirishnomalar' %}"
+                    aria-label="{% translate 'Bildirishnomalar' %}"
+                    :aria-expanded="notifyOpen">
+              {% icon "bell" 18 %}
+              {% if nav_low_stock or nav_pending_users %}
+                <span class="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-negative ring-2 ring-surface"></span>
+              {% endif %}
+            </button>
+
+            {# Notifications Dropdown Popover #}
+            <div x-show="notifyOpen"
+                 x-cloak
+                 @click.outside="notifyOpen = false"
+                 x-transition:enter="transition ease-out duration-100"
+                 x-transition:enter-start="transform opacity-0 scale-95"
+                 x-transition:enter-end="transform opacity-100 scale-100"
+                 x-transition:leave="transition ease-in duration-75"
+                 x-transition:leave-start="transform opacity-100 scale-100"
+                 x-transition:leave-end="transform opacity-0 scale-95"
+                 class="absolute right-0 top-[calc(100%+8px)] w-80 rounded-xl border border-line bg-surface p-2 shadow-xl z-50">
+              
+              <div class="flex items-center justify-between px-3 py-2 border-b border-line/60">
+                <span class="text-xs font-semibold uppercase tracking-wider text-muted">{% translate "Bildirishnomalar" %}</span>
+                {% if nav_low_stock or nav_pending_users %}
+                  <span class="pill pill-neg text-[11px] font-semibold">{{ nav_low_stock|add:nav_pending_users }} ta</span>
+                {% endif %}
+              </div>
+
+              <div class="py-1 divide-y divide-rule/60 text-xs">
+                {% if nav_low_stock %}
+                  <a href="{% url 'inventory:dashboard' %}" class="flex items-start gap-2.5 p-2.5 rounded-lg hover:bg-raised transition-colors">
+                    <span class="flex h-7 w-7 flex-none items-center justify-center rounded-lg bg-neg-bg text-negative mt-0.5">
+                      {% icon "alert" 14 %}
+                    </span>
+                    <div class="min-w-0">
+                      <p class="font-medium text-ink">{% translate "Minimal qoldiqdan kam" %}</p>
+                      <p class="text-muted mt-0.5">{% blocktranslate count n=nav_low_stock %}{{ n }} ta material kam qoldi{% plural %}{{ n }} ta material kam qoldi{% endblocktranslate %}</p>
+                    </div>
+                  </a>
+                {% endif %}
+
+                {% if nav_pending_users %}
+                  <a href="{% url 'users:pending_users' %}" class="flex items-start gap-2.5 p-2.5 rounded-lg hover:bg-raised transition-colors">
+                    <span class="flex h-7 w-7 flex-none items-center justify-center rounded-lg bg-accent/10 text-ink mt-0.5">
+                      {% icon "mail" 14 %}
+                    </span>
+                    <div class="min-w-0">
+                      <p class="font-medium text-ink">{% translate "Yangi so'rovlar" %}</p>
+                      <p class="text-muted mt-0.5">{% blocktranslate count n=nav_pending_users %}{{ n }} ta xodim tasdiq kutmoqda{% plural %}{{ n }} ta xodim tasdiq kutmoqda{% endblocktranslate %}</p>
+                    </div>
+                  </a>
+                {% endif %}
+
+                {% if not nav_low_stock and not nav_pending_users %}
+                  <div class="p-4 text-center text-muted">
+                    <p class="font-medium text-ink">{% translate "Yangi bildirishnomalar yo'q" %}</p>
+                    <p class="text-[11px] text-muted mt-0.5">{% translate "Barcha materiallar me'yorida va yangi so'rovlar mavjud emas." %}</p>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
         {% endif %}
 
         {# ---- User profile dropdown (desktop) ---- #}

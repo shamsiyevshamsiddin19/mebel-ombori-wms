@@ -78,20 +78,6 @@
   </li>
   <li>
     <a class="nav-item relative"
-       href="{% url 'users:pending_users' %}"
-       title="{% translate "So'rovlar" %}{% if nav_pending_users %} ({{ nav_pending_users }}){% endif %}"
-       :class="{ 'lg:justify-center lg:!px-0 lg:w-10 lg:h-10 lg:mx-auto': collapsed }"
-       {% if nav_section == "pending_users" %}aria-current="page"{% endif %}>
-      {% icon "check" 18 "flex-none" %}
-      <span class="truncate" :class="{ 'lg:hidden': collapsed }">{% translate "So'rovlar" %}</span>
-      {% if nav_pending_users %}
-        <span class="nav-count" :class="{ 'lg:hidden': collapsed }" aria-label="{% blocktranslate count n=nav_pending_users|add:0 %}{{ n }} ta tasdiq kutayotgan so'rov{% plural %}{{ n }} ta tasdiq kutayotgan so'rov{% endblocktranslate %}">{{ nav_pending_users }}</span>
-        <span class="hidden absolute top-1 right-1 h-2 w-2 rounded-full bg-negative" :class="{ 'lg:block': collapsed }"></span>
-      {% endif %}
-    </a>
-  </li>
-  <li>
-    <a class="nav-item relative"
        href="{% url 'users:user_list' %}"
        title="{% translate "Ishchilar" %}"
        :class="{ 'lg:justify-center lg:!px-0 lg:w-10 lg:h-10 lg:mx-auto': collapsed }"
