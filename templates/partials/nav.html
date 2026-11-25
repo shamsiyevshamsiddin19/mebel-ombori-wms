@@ -48,16 +48,6 @@
   </li>
   <li>
     <a class="nav-item relative"
-       href="{% url 'inventory:kirim' %}"
-       title="{% translate "Kirim" %}"
-       :class="{ 'lg:justify-center lg:!px-0 lg:w-10 lg:h-10 lg:mx-auto': collapsed }"
-       {% if nav_section == "kirim" %}aria-current="page"{% endif %}>
-      {% icon "arrival" 18 "flex-none" %}
-      <span class="truncate" :class="{ 'lg:hidden': collapsed }">{% translate "Kirim" %}</span>
-    </a>
-  </li>
-  <li>
-    <a class="nav-item relative"
        href="{% url 'inventory:material_list' %}"
        title="{% translate "Materiallar" %}"
        :class="{ 'lg:justify-center lg:!px-0 lg:w-10 lg:h-10 lg:mx-auto': collapsed }"
