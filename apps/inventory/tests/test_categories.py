@@ -30,13 +30,31 @@ class NewCategoryTests(TestCase):
 
     def test_built_in_categories_are_seeded_and_boshqa_is_offered(self):
         self.assertEqual(
-            list(Category.objects.values_list("code", flat=True)),
-            [MaterialCategory.SHEET, MaterialCategory.LIQUID, MaterialCategory.LINEAR, MaterialCategory.HARDWARE],
+            list(Category.objects.filter(is_active=True).values_list("code", flat=True)),
+            ["HARDWARE", "KRASKA", "GRUNTOFKA", "LMDF", "LDSP", "FANER", "PVC", "DSP", "UPAKOVKA"],
         )
         page = self.client.get(self.url)
         self.assertContains(page, f'value="{OTHER_CATEGORY}"')
         self.assertContains(page, ">Boshqa</option>")
         self.assertContains(page, "Yangi kategoriya nomi")
+        self.assertNotContains(page, 'value="SHEET"')
+
+    def test_boshqa_with_offcut_support_and_sm_dimensions(self):
+        response = self.post(
+            name="MDF 18 mm",
+            new_category="MDF",
+            new_category_supports_offcuts="on",
+            dim_unit="sm",
+            length_mm="275",
+            width_mm="183",
+            allowed_roles=[UserRole.ARRACHI],
+        )
+        category = Category.objects.get(name="MDF")
+        material = BaseMaterial.objects.get(name="MDF 18 mm")
+        self.assertRedirects(response, reverse("inventory:kirim") + f"?material={material.pk}", fetch_redirect_response=False)
+        self.assertTrue(category.supports_offcuts)
+        self.assertTrue(material.supports_offcuts)
+        self.assertEqual((material.whole_stock.length_mm, material.whole_stock.width_mm), (2750, 1830))
 
     def test_boshqa_creates_the_category_and_the_material(self):
         response = self.post()

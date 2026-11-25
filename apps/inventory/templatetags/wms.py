@@ -9,7 +9,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 from django.utils.translation import pgettext_lazy
 
-from apps.inventory.models import category_label, unit_short_label
+from apps.inventory.models import category_label, expense_category_label, unit_short_label
 from apps.users.models import role_label as _role_label
 
 register = template.Library()
@@ -80,6 +80,11 @@ def cat_label(value: str) -> str:
 
 
 @register.filter
+def expense_cat_label(value: str) -> str:
+    return expense_category_label(value)
+
+
+@register.filter
 def role_label(value: str) -> str:
     return _role_label(value)
 
@@ -147,6 +152,7 @@ _ICON_PATHS = {
     "edit": '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4z"/>',
     "mail": '<rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
     "bell": '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+    "wallet": '<path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/>',
 }
 
 

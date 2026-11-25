@@ -23,7 +23,7 @@
   </div>
 </form>
 
-<section class="panel mt-6 grid grid-cols-2 md:grid-cols-4" aria-label="{% translate "Davr bo'yicha jami" %}">
+<section class="panel mt-6 grid grid-cols-2 md:grid-cols-5" aria-label="{% translate "Davr bo'yicha jami" %}">
   <div class="border-b border-r border-line p-5 md:border-b-0">
     <p class="text-muted">{% translate "Kirim" %}</p>
     <p class="num mt-1 font-semibold" style="font-size:24px;line-height:32px">{{ totals.kirim_usd|usd }}</p>
@@ -34,11 +34,16 @@
     <p class="num mt-1 font-semibold" style="font-size:24px;line-height:32px">{{ totals.chiqim_usd|usd }}</p>
     <p class="mt-1 text-muted" style="font-size:12px">{% blocktranslate count n=totals.chiqim_count %}<span class="num">{{ n }}</span> ta yozuv{% plural %}<span class="num">{{ n }}</span> ta yozuv{% endblocktranslate %}</p>
   </div>
-  <div class="border-r border-line p-5">
+  <div class="border-b border-r border-line p-5 md:border-b-0">
     <p class="text-muted">{% translate "Farq" %}</p>
     <p class="num mt-1 font-semibold" style="font-size:24px;line-height:32px">{% if totals.kirim_usd >= totals.chiqim_usd %}+{% else %}−{% endif %}{{ totals.net_abs|usd }}</p>
     <p class="mt-1 text-muted" style="font-size:12px">{% translate "kirim − chiqim" %}</p>
   </div>
+  <a href="{% url 'inventory:expenses' %}" class="border-r border-line p-5 block hover:bg-raised/40 transition-colors">
+    <p class="text-muted">{% translate "Qo'shimcha xarajatlar" %}</p>
+    <p class="num mt-1 font-semibold" style="font-size:24px;line-height:32px">{{ expense_totals.total_usd|usd }}</p>
+    <p class="mt-1 text-muted" style="font-size:12px">{% translate "nalog, produkta, stanok" %}</p>
+  </a>
   <div class="p-5">
     <p class="text-muted">{% translate "Qoldiq qo'shildi" %}</p>
     <p class="num mt-1 font-semibold" style="font-size:24px;line-height:32px">{{ totals.offcut_count }}</p>

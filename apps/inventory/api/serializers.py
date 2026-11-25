@@ -7,8 +7,10 @@ from apps.users.models import worker_role_choices
 from .. import services
 from ..models import (
     BaseMaterial,
+    ExpenseCategory,
     InventoryTransaction,
     LeftoverOffcut,
+    OperatingExpense,
     WholeMaterial,
     default_roles_for_category,
 )
@@ -203,3 +205,14 @@ class KirimSerializer(serializers.Serializer):
         if ("unit_price_usd" in attrs) == ("total_price_usd" in attrs):
             raise serializers.ValidationError("Provide exactly one of unit_price_usd or total_price_usd.")
         return attrs
+
+
+class OperatingExpenseSerializer(serializers.ModelSerializer):
+    created_by = serializers.StringRelatedField(read_only=True)
+    category = serializers.ChoiceField(choices=ExpenseCategory.choices)
+    amount_usd = serializers.DecimalField(max_digits=14, decimal_places=2, min_value=Decimal("0.01"))
+
+    class Meta:
+        model = OperatingExpense
+        fields = ("id", "category", "title", "amount_usd", "expense_date", "notes", "created_by", "created_at")
+        read_only_fields = ("id", "created_by", "created_at")

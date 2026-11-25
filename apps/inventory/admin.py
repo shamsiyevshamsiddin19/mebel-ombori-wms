@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import BaseMaterial, InventoryTransaction, LeftoverOffcut, WholeMaterial
+from .models import BaseMaterial, Category, InventoryTransaction, LeftoverOffcut, OperatingExpense, WholeMaterial
 
 
 class WholeMaterialInline(admin.StackedInline):
@@ -50,6 +50,24 @@ class InventoryTransactionAdmin(admin.ModelAdmin):
 
     def has_change_permission(self, request, obj=None):
         return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ("code", "name", "sort_order", "supports_offcuts", "is_active")
+    list_filter = ("supports_offcuts", "is_active")
+    ordering = ("sort_order", "name")
+
+
+@admin.register(OperatingExpense)
+class OperatingExpenseAdmin(admin.ModelAdmin):
+    list_display = ("expense_date", "category", "title", "amount_usd", "created_by", "created_at")
+    list_filter = ("category", "expense_date")
+    search_fields = ("title", "notes")
+    date_hierarchy = "expense_date"
 
     def has_delete_permission(self, request, obj=None):
         return False

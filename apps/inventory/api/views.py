@@ -8,12 +8,13 @@ from rest_framework.views import APIView
 from apps.users.permissions import CanTakeStock, IsWarehouseAdmin
 
 from .. import selectors, services
-from ..models import BaseMaterial, InventoryTransaction, TransactionType, category_codes
+from ..models import BaseMaterial, ExpenseCategory, InventoryTransaction, TransactionType, category_codes
 from .serializers import (
     BaseMaterialSerializer,
     KirimSerializer,
     LeftoverOffcutSerializer,
     OffcutWithdrawSerializer,
+    OperatingExpenseSerializer,
     TransactionSerializer,
     WholeMaterialSerializer,
     WithdrawSerializer,
@@ -189,3 +190,35 @@ class DashboardAPIView(APIView):
                 "low_stock": WholeMaterialSerializer(low_stock, many=True, context={"request": request}).data,
             }
         )
+
+
+class ExpenseViewSet(
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet,
+):
+    """Admin: operating expenses (nalog, produkta, stanok)."""
+
+    serializer_class = OperatingExpenseSerializer
+    permission_classes = [IsWarehouseAdmin]
+
+    def get_queryset(self):
+        params = self.request.query_params
+        month = None
+        if params.get("month"):
+            try:
+                month = dt.datetime.strptime(params["month"], "%Y-%m").date()
+            except ValueError:
+                month = None
+        category = params.get("category", "")
+        return selectors.filter_expenses(
+            month=month,
+            category=category if category in ExpenseCategory.values else "",
+        )
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        entry = services.record_expense(user=request.user, **serializer.validated_data)
+        return Response(self.get_serializer(entry).data, status=status.HTTP_201_CREATED)

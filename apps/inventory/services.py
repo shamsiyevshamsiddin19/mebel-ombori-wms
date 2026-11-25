@@ -11,12 +11,15 @@ from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
+from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from .models import (
     BaseMaterial,
+    ExpenseCategory,
     InventoryTransaction,
     LeftoverOffcut,
+    OperatingExpense,
     TransactionType,
     WholeMaterial,
     default_roles_for_category,
@@ -341,3 +344,39 @@ def register_offcut(
             notes=notes.strip(),
         )
     return offcut
+
+
+# ---------------------------------------------------------------------------
+# Operating expenses (admin only): nalog, produkta, stanok
+# ---------------------------------------------------------------------------
+def record_expense(
+    *,
+    user,
+    category: str,
+    title: str,
+    amount_usd,
+    expense_date=None,
+    notes: str = "",
+) -> OperatingExpense:
+    """Record an operating expense (nalog, produkta, stanok, or other)."""
+    _require_admin(user)
+    if category not in ExpenseCategory.values:
+        raise ValidationError({"category": _("Noma'lum xarajat turi.")})
+    clean_title = " ".join((title or "").split())
+    if not clean_title:
+        raise ValidationError({"title": _("Xarajat nomini kiriting.")})
+    amount = _decimal(amount_usd, "amount_usd")
+    if amount <= 0:
+        raise ValidationError({"amount_usd": _("Summa 0 dan katta bo'lishi kerak.")})
+    if amount != amount.quantize(CENTS):
+        raise ValidationError({"amount_usd": _("Summa ko'pi bilan 2 xonali kasr bo'lishi mumkin.")})
+    amount = amount.quantize(CENTS, rounding=ROUND_HALF_UP)
+
+    return OperatingExpense.objects.create(
+        category=category,
+        title=clean_title,
+        amount_usd=amount,
+        expense_date=expense_date or timezone.localdate(),
+        notes=(notes or "").strip(),
+        created_by=user,
+    )

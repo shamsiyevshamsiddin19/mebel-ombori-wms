@@ -19,6 +19,8 @@ NAV_SECTIONS = {
     "material_list": "materials",
     "material_create": "materials",
     "material_edit": "materials",
+    "expenses": "expenses",
+    "expenses_export": "expenses",
     "reports": "reports",
     "pending_users": "pending_users",
     "pending_user_review": "pending_users",

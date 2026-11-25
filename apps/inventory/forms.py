@@ -3,6 +3,7 @@ from decimal import Decimal
 
 from django import forms
 from django.core.validators import MaxValueValidator
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.users.forms import unique_code
@@ -11,11 +12,14 @@ from apps.users.models import User, worker_role_choices
 from .models import (
     BaseMaterial,
     Category,
+    ExpenseCategory,
     MaterialCategory,
     MeasurementUnit,
     WholeMaterial,
+    active_category_choices,
     category_choices,
     default_roles_for_category,
+    expense_category_choices,
     localized_category_name,
     transaction_type_choices,
 )
@@ -27,8 +31,20 @@ MAX_MM = 100_000
 OTHER_CATEGORY = "__other__"
 
 
-def material_category_choices() -> list[tuple[str, str]]:
-    return [("", _("Tanlang")), *category_choices(), (OTHER_CATEGORY, _("Boshqa"))]
+def material_category_choices(include_code: str = "") -> list[tuple[str, str]]:
+    return [("", _("Tanlang")), *active_category_choices(include_code=include_code), (OTHER_CATEGORY, _("Boshqa"))]
+
+
+def report_category_choices() -> list[tuple[str, str]]:
+    used_codes = set(BaseMaterial.objects.values_list("category", flat=True).distinct())
+    seen = []
+    for code, label in active_category_choices():
+        seen.append((code, label))
+    active_set = {code for code, _ in seen}
+    for code, label in category_choices():
+        if code in used_codes and code not in active_set:
+            seen.append((code, label))
+    return [("", _("Barchasi")), *seen]
 
 
 def category_code_from(name: str) -> str:
@@ -48,6 +64,11 @@ class MaterialForm(forms.ModelForm):
         label=_("Yangi kategoriya nomi"), required=False, max_length=60,
         widget=forms.TextInput(attrs={"placeholder": _("Masalan: Oyna va ko'zgu")}),
     )
+    new_category_supports_offcuts = forms.BooleanField(
+        label=_("O'lcham (list) va qoldiq yuritiladi"),
+        required=False,
+        help_text=_("Belgilansa, list o'lchami (uzunlik × eni) va kesilgan qoldiqlar qo'shiladi."),
+    )
     allowed_roles = forms.MultipleChoiceField(
         label=_("Qaysi kasblar ko'ra oladi va oladi"),
         choices=worker_role_choices,
@@ -55,13 +76,19 @@ class MaterialForm(forms.ModelForm):
         required=False,
         help_text=_("Bo'sh qoldirilsa, kategoriya bo'yicha standart kasblar belgilanadi."),
     )
+    dim_unit = forms.ChoiceField(
+        label=_("O'lcham birligi"),
+        choices=[("mm", "mm"), ("sm", "sm")],
+        required=False,
+        initial="mm",
+    )
     length_mm = forms.IntegerField(
-        label=_("List uzunligi (mm)"), required=False, min_value=1, max_value=MAX_MM,
-        help_text=_("Faqat list materiallar uchun, masalan 2750."),
+        label=_("List uzunligi"), required=False, min_value=1, max_value=MAX_MM,
+        help_text=_("Faqat o'lchamli materiallar uchun, masalan 2750 mm (yoki 275 sm)."),
     )
     width_mm = forms.IntegerField(
-        label=_("List eni (mm)"), required=False, min_value=1, max_value=MAX_MM,
-        help_text=_("Masalan 1830."),
+        label=_("List eni"), required=False, min_value=1, max_value=MAX_MM,
+        help_text=_("Masalan 1830 mm (yoki 183 sm)."),
     )
     # Whole numbers only in the form; the model columns stay decimal so existing data is untouched.
     minimum_threshold = forms.IntegerField(
@@ -93,6 +120,8 @@ class MaterialForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.pending_category_name = ""  # set by clean() when "Boshqa" names a category that doesn't exist yet
+        if self.instance.pk:
+            self.fields["category"].choices = material_category_choices(include_code=self.instance.category)
         stock = getattr(self.instance, "whole_stock", None) if self.instance.pk else None
         if stock is not None:
             self.fields["length_mm"].initial = stock.length_mm
@@ -111,12 +140,20 @@ class MaterialForm(forms.ModelForm):
         if cleaned.get("category") == OTHER_CATEGORY:
             self._resolve_new_category(cleaned)
         category = cleaned.get("category")
-        if category and category != OTHER_CATEGORY and not cleaned.get("allowed_roles")                 and not default_roles_for_category(category):
+        if category and category != OTHER_CATEGORY and not cleaned.get("allowed_roles") and not default_roles_for_category(category):
             self.add_error("allowed_roles", _("Bu kategoriya uchun kamida bitta kasbni belgilang."))
         length, width = cleaned.get("length_mm"), cleaned.get("width_mm")
         if bool(length) != bool(width):
             self.add_error("width_mm" if length else "length_mm", _("Uzunlik va enni birga kiriting."))
-        if cleaned.get("category") == MaterialCategory.LIQUID and cleaned.get("unit_of_measure") in (
+        elif length and width and cleaned.get("dim_unit") == "sm":
+            if length * 10 > MAX_MM:
+                self.add_error("length_mm", _("Uzunlik %(max)s sm dan oshmasligi kerak.") % {"max": MAX_MM // 10})
+            if width * 10 > MAX_MM:
+                self.add_error("width_mm", _("Eni %(max)s sm dan oshmasligi kerak.") % {"max": MAX_MM // 10})
+            if not self.has_error("length_mm") and not self.has_error("width_mm"):
+                cleaned["length_mm"] = length * 10
+                cleaned["width_mm"] = width * 10
+        if category in (MaterialCategory.LIQUID, "KRASKA", "GRUNTOFKA") and cleaned.get("unit_of_measure") in (
             MeasurementUnit.METER,
             MeasurementUnit.CENTIMETER,
         ):
@@ -153,7 +190,12 @@ class MaterialForm(forms.ModelForm):
             return
         last = Category.objects.order_by("-sort_order").values_list("sort_order", flat=True).first() or 0
         Category.objects.create(
-            code=self.cleaned_data["category"], name=self.pending_category_name, sort_order=last + 10
+            code=self.cleaned_data["category"],
+            name=self.pending_category_name,
+            sort_order=last + 10,
+            supports_offcuts=bool(self.cleaned_data.get("new_category_supports_offcuts")),
+            default_roles=list(self.cleaned_data.get("allowed_roles") or []),
+            is_active=True,
         )
 
     def save_stock_dimensions(self, material: BaseMaterial) -> None:
@@ -169,6 +211,11 @@ class KirimForm(forms.Form):
     PRICE_TOTAL = "total"
     PRICE_UNIT = "unit"
 
+    category = forms.ChoiceField(
+        label=_("Kategoriya"),
+        required=False,
+        choices=lambda: [("", _("Barcha kategoriyalar")), *active_category_choices()],
+    )
     material = MaterialChoiceField(
         queryset=BaseMaterial.objects.filter(is_active=True), label=_("Material"), empty_label=_("Materialni tanlang")
     )
@@ -181,7 +228,14 @@ class KirimForm(forms.Form):
         widget=forms.NumberInput(attrs={"x-model.number": "containers", "inputmode": "decimal"}),
         help_text=_("Masalan, 5 chelak. Miqdor idish hajmiga ko'paytirib hisoblanadi."),
     )
-    quantity = forms.IntegerField(label=_("Miqdor"), required=False, min_value=1)
+    quantity = forms.DecimalField(
+        label=_("Miqdor"),
+        required=False,
+        min_value=Decimal("0.01"),
+        max_digits=12,
+        decimal_places=2,
+        widget=forms.NumberInput(attrs={"step": "0.01", "inputmode": "decimal"}),
+    )
     price_mode = forms.ChoiceField(
         label=_("Narx turi"),
         choices=[(PRICE_TOTAL, _("Optom narx")), (PRICE_UNIT, _("Dona narxi"))],
@@ -294,7 +348,7 @@ class ReportFilterForm(forms.Form):
         label=_("Harakat turi"), required=False, choices=lambda: [("", _("Barchasi")), *transaction_type_choices()]
     )
     category = forms.ChoiceField(
-        label=_("Kategoriya"), required=False, choices=lambda: [("", _("Barchasi")), *category_choices()]
+        label=_("Kategoriya"), required=False, choices=report_category_choices
     )
     user = forms.ModelChoiceField(
         label=_("Ishchi"), required=False, queryset=User.objects.order_by("full_name", "username"),
@@ -321,4 +375,64 @@ class ReportFilterForm(forms.Form):
             "transaction_type": data.get("transaction_type", ""),
             "user_id": data["user"].pk if data.get("user") else None,
             "material_id": data["material"].pk if data.get("material") else None,
+        }
+
+
+class ExpenseForm(forms.Form):
+    """Admin: record operating expenses such as nalog, produkta, stanok."""
+
+    category = forms.ChoiceField(
+        label=_("Xarajat turi"),
+        choices=expense_category_choices,
+        initial=ExpenseCategory.STANOK,
+    )
+    title = forms.CharField(
+        label=_("Nomi / nima uchun"),
+        max_length=200,
+        widget=forms.TextInput(attrs={"placeholder": _("Masalan: Arra pichog'i, tushlik, soliq...")}),
+    )
+    amount_usd = forms.DecimalField(
+        label=_("Summa (USD $)"),
+        min_value=Decimal("0.01"),
+        max_digits=14,
+        decimal_places=2,
+        widget=forms.NumberInput(attrs={"step": "0.01", "min": "0.01", "inputmode": "decimal", "placeholder": "0.00"}),
+    )
+    expense_date = forms.DateField(
+        label=_("Sana"),
+        initial=timezone.localdate,
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+    notes = forms.CharField(
+        label=_("Izoh"),
+        required=False,
+        max_length=1000,
+        widget=forms.TextInput(attrs={"placeholder": _("Qo'shimcha izoh...")}),
+    )
+
+
+class ExpenseFilterForm(forms.Form):
+    month = forms.CharField(
+        label=_("Oy"), required=False, widget=forms.TextInput(attrs={"type": "month"})
+    )
+    category = forms.ChoiceField(
+        label=_("Xarajat turi"),
+        required=False,
+        choices=lambda: [("", _("Barchasi")), *expense_category_choices()],
+    )
+
+    def clean_month(self) -> dt.date | None:
+        value = self.cleaned_data.get("month")
+        if not value:
+            return None
+        try:
+            return dt.datetime.strptime(value, "%Y-%m").date()
+        except ValueError as exc:
+            raise forms.ValidationError(_("Oyni YYYY-MM ko'rinishida kiriting.")) from exc
+
+    def selector_kwargs(self) -> dict:
+        data = self.cleaned_data if self.is_valid() else {}
+        return {
+            "month": data.get("month"),
+            "category": data.get("category", ""),
         }

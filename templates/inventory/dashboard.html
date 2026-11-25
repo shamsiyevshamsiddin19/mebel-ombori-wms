@@ -20,23 +20,28 @@
   <div class="grid min-w-0 gap-6">
 
     {# KPI strip: one container split by dividers #}
-    <section class="panel grid grid-cols-2 md:grid-cols-[1.35fr_1fr_1fr_1fr]" aria-label="{% translate "Asosiy ko'rsatkichlar" %}">
+    <section class="panel grid grid-cols-2 md:grid-cols-[1.3fr_1fr_1fr_1fr_1fr]" aria-label="{% translate "Asosiy ko'rsatkichlar" %}">
       <div class="col-span-2 border-b border-line p-5 md:col-span-1 md:border-b-0 md:border-r">
         <p class="text-muted">{% translate "Ombor qiymati" %}</p>
-        <p class="num mt-1 font-semibold whitespace-nowrap" style="font-size:clamp(24px, 2.4vw, 32px);line-height:40px">{{ valuation_usd|usd }}</p>
+        <p class="num mt-1 font-semibold whitespace-nowrap" style="font-size:clamp(22px, 2.1vw, 30px);line-height:38px">{{ valuation_usd|usd }}</p>
         <p class="mt-1 text-muted" style="font-size:12px">{% blocktranslate count n=material_count %}<span class="num">{{ n }}</span> material, o'rtacha xarid narxida{% plural %}<span class="num">{{ n }}</span> material, o'rtacha xarid narxida{% endblocktranslate %}</p>
       </div>
-      <div class="border-r border-line p-5">
+      <div class="border-b border-r border-line p-5 md:border-b-0">
         <p class="text-muted">{% blocktranslate with month=current_flow.month|month_name %}Kirim, {{ month }}{% endblocktranslate %}</p>
         <p class="num mt-1 font-semibold" style="font-size:24px;line-height:32px">{{ current_flow.kirim_usd|usd }}</p>
         <p class="mt-1 text-muted" style="font-size:12px">{% blocktranslate count n=current_flow.kirim_count %}<span class="num">{{ n }}</span> ta yozuv{% plural %}<span class="num">{{ n }}</span> ta yozuv{% endblocktranslate %}{% if previous_flow %} · {{ previous_flow.month|month_name }}: <span class="num">{{ previous_flow.kirim_usd|usd }}</span>{% endif %}</p>
       </div>
-      <div class="p-5 md:border-r md:border-line">
+      <div class="border-b border-line p-5 md:border-b-0 md:border-r">
         <p class="text-muted">{% blocktranslate with month=current_flow.month|month_name %}Chiqim, {{ month }}{% endblocktranslate %}</p>
         <p class="num mt-1 font-semibold" style="font-size:24px;line-height:32px">{{ current_flow.chiqim_usd|usd }}</p>
         <p class="mt-1 text-muted" style="font-size:12px">{% blocktranslate count n=current_flow.chiqim_count %}<span class="num">{{ n }}</span> ta yozuv{% plural %}<span class="num">{{ n }}</span> ta yozuv{% endblocktranslate %}{% if previous_flow %} · {{ previous_flow.month|month_name }}: <span class="num">{{ previous_flow.chiqim_usd|usd }}</span>{% endif %}</p>
       </div>
-      <div class="col-span-2 border-t border-line p-5 md:col-span-1 md:border-t-0">
+      <a href="{% url 'inventory:expenses' %}" class="border-r border-line p-5 block hover:bg-raised/40 transition-colors">
+        <p class="text-muted">{% blocktranslate with month=current_flow.month|month_name %}Xarajatlar, {{ month }}{% endblocktranslate %}</p>
+        <p class="num mt-1 font-semibold" style="font-size:24px;line-height:32px">{{ month_expenses.total_usd|usd }}</p>
+        <p class="mt-1 text-muted" style="font-size:12px">{% translate "Nalog, produkta, stanok" %}</p>
+      </a>
+      <div class="p-5">
         <p class="text-muted">{% translate "Qoldiqlar" %}</p>
         <p class="num mt-1 font-semibold" style="font-size:24px;line-height:32px">{{ offcut_count }} <span class="font-normal text-muted" style="font-size:14px">{% blocktranslate context "count" count n=offcut_count %}bo'lak{% plural %}bo'lak{% endblocktranslate %}</span></p>
         <p class="mt-1 text-muted" style="font-size:12px">{% if offcut_value_usd %}{% blocktranslate with value=offcut_value_usd|usd %}taxminan <span class="num">{{ value }}</span>, qiymatga kirmaydi{% endblocktranslate %}{% else %}{% translate "qiymatga kirmaydi" %}{% endif %}</p>

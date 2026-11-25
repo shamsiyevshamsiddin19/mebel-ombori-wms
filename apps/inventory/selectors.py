@@ -17,12 +17,14 @@ from django.db.models.functions import Coalesce, Round, TruncMonth
 from django.utils import timezone
 
 from .models import (
-    OFFCUT_CATEGORIES,
     BaseMaterial,
+    ExpenseCategory,
     InventoryTransaction,
     LeftoverOffcut,
+    OperatingExpense,
     TransactionType,
     WholeMaterial,
+    offcut_category_codes,
 )
 
 MONEY = DecimalField(max_digits=24, decimal_places=6)
@@ -85,7 +87,7 @@ def visible_offcuts(user) -> QuerySet[LeftoverOffcut]:
 
 
 def offcut_capable_materials(user) -> QuerySet[BaseMaterial]:
-    return visible_materials(user).filter(category__in=OFFCUT_CATEGORIES)
+    return visible_materials(user).filter(category__in=offcut_category_codes())
 
 
 def user_can_access_material(user, material: BaseMaterial) -> bool:
@@ -310,3 +312,47 @@ def consumption_by_worker(qs: QuerySet[InventoryTransaction]) -> QuerySet:
         .annotate(total_usd=Coalesce(Sum("total_price_usd"), ZERO_MONEY), entries=Count("id"))
         .order_by("-total_usd")
     )
+
+
+# ---------------------------------------------------------------------------
+# Operating expenses (TZ 2.3: nalog, produkta, stanok)
+# ---------------------------------------------------------------------------
+def filter_expenses(
+    qs: QuerySet[OperatingExpense] | None = None,
+    *,
+    month: dt.date | None = None,
+    category: str = "",
+) -> QuerySet[OperatingExpense]:
+    qs = qs if qs is not None else OperatingExpense.objects.all()
+    qs = qs.select_related("created_by")
+    if month:
+        start_date = dt.date(month.year, month.month, 1)
+        end_date = dt.date(month.year + (month.month == 12), month.month % 12 + 1, 1)
+        qs = qs.filter(expense_date__gte=start_date, expense_date__lt=end_date)
+    if category:
+        qs = qs.filter(category=category)
+    return qs
+
+
+def expense_totals(qs: QuerySet[OperatingExpense] | None = None) -> dict:
+    qs = qs if qs is not None else OperatingExpense.objects.all()
+    agg = qs.order_by().aggregate(
+        total_usd=Coalesce(Sum("amount_usd"), ZERO_MONEY),
+        count=Count("id"),
+        nalog_usd=Coalesce(Sum("amount_usd", filter=Q(category=ExpenseCategory.NALOG)), ZERO_MONEY),
+        produkta_usd=Coalesce(Sum("amount_usd", filter=Q(category=ExpenseCategory.PRODUKTA)), ZERO_MONEY),
+        stanok_usd=Coalesce(Sum("amount_usd", filter=Q(category=ExpenseCategory.STANOK)), ZERO_MONEY),
+        other_usd=Coalesce(Sum("amount_usd", filter=Q(category=ExpenseCategory.OTHER)), ZERO_MONEY),
+    )
+    return {
+        "total_usd": Decimal(agg["total_usd"]).quantize(Decimal("0.01")),
+        "count": agg["count"],
+        "nalog_usd": Decimal(agg["nalog_usd"]).quantize(Decimal("0.01")),
+        "produkta_usd": Decimal(agg["produkta_usd"]).quantize(Decimal("0.01")),
+        "stanok_usd": Decimal(agg["stanok_usd"]).quantize(Decimal("0.01")),
+        "other_usd": Decimal(agg["other_usd"]).quantize(Decimal("0.01")),
+    }
+
+
+def monthly_expense_totals(year: int, month: int) -> dict:
+    return expense_totals(filter_expenses(month=dt.date(year, month, 1)))

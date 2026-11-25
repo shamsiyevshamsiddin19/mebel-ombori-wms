@@ -5,6 +5,8 @@ from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.db.models.signals import post_delete, post_save
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import pgettext, pgettext_lazy
 
@@ -15,10 +17,7 @@ CENTS = Decimal("0.01")
 
 
 class MaterialCategory(models.TextChoices):
-    """The built-in categories, which carry special behaviour (sheet sizes, offcuts, default trades).
-
-    The full list, including categories admins add through "Boshqa", lives in ``Category``.
-    """
+    """Legacy built-in category codes kept for compatibility alongside DB ``Category`` rows."""
 
     SHEET = "SHEET", pgettext_lazy("category", "List materiallar")
     LIQUID = "LIQUID", pgettext_lazy("category", "Bo'yoq va suyuqliklar")
@@ -26,8 +25,22 @@ class MaterialCategory(models.TextChoices):
     HARDWARE = "HARDWARE", pgettext_lazy("category", "Furnitura")
 
 
+#: Seeded TZ category names declared here so i18n extract registers them under "category".
+BUILTIN_TZ_CATEGORY_NAMES = (
+    pgettext_lazy("category", "Kraska"),
+    pgettext_lazy("category", "Gruntofka"),
+    pgettext_lazy("category", "LMDF"),
+    pgettext_lazy("category", "LDSP"),
+    pgettext_lazy("category", "Faner"),
+    pgettext_lazy("category", "PVC"),
+    pgettext_lazy("category", "DSP"),
+    pgettext_lazy("category", "Upakovka"),
+)
+
+
 class MeasurementUnit(models.TextChoices):
     PIECE = "PIECE", pgettext_lazy("unit", "Dona")
+    SQM = "SQM", pgettext_lazy("unit", "Kvadrat metr")
     LITER = "LITER", pgettext_lazy("unit", "Litr")
     KILOGRAM = "KG", pgettext_lazy("unit", "Kilogramm")
     METER = "METER", pgettext_lazy("unit", "Metr")
@@ -36,6 +49,7 @@ class MeasurementUnit(models.TextChoices):
 
 #: Short unit labels for compact tables and buttons.
 UNIT_SHORT_LABELS = {
+    MeasurementUnit.SQM: pgettext_lazy("unit short", "m²"),
     MeasurementUnit.LITER: pgettext_lazy("unit short", "L"),
     MeasurementUnit.KILOGRAM: pgettext_lazy("unit short", "kg"),
     MeasurementUnit.METER: pgettext_lazy("unit short", "m"),
@@ -46,7 +60,7 @@ UNIT_SHORT_LABELS = {
 #: Units that can only move in whole numbers (you cannot take 1.5 hinges).
 INTEGER_UNITS = frozenset({MeasurementUnit.PIECE})
 
-#: Default trade access per category; admins can override per material.
+#: Default trade access per legacy category code; DB ``Category.default_roles`` takes precedence.
 DEFAULT_CATEGORY_ROLES: dict[str, list[str]] = {
     MaterialCategory.SHEET: [UserRole.ARRACHI, UserRole.ROVERCHI],
     MaterialCategory.LIQUID: [UserRole.KRASKACHI],
@@ -54,7 +68,7 @@ DEFAULT_CATEGORY_ROLES: dict[str, list[str]] = {
     MaterialCategory.HARDWARE: [UserRole.SBORKACHI],
 }
 
-#: Categories for which leftover offcuts (length x width) make sense.
+#: Legacy categories supporting dimensions / offcuts; DB ``Category.supports_offcuts`` takes precedence.
 OFFCUT_CATEGORIES = frozenset({MaterialCategory.SHEET, MaterialCategory.LINEAR})
 
 
@@ -64,16 +78,15 @@ def unit_short_label(unit: str) -> str:
     return str(label) if label is not None else unit
 
 
-def default_roles_for_category(category: str) -> list[str]:
-    return [str(role) for role in DEFAULT_CATEGORY_ROLES.get(category, [])]
-
-
 class Category(models.Model):
-    """A material category. The four built-in ones are seeded; admins add more via "Boshqa"."""
+    """A material category. Initial TZ categories are seeded; admins add more via "Boshqa"."""
 
     code = models.CharField(_("Kod"), max_length=50, unique=True)
     name = models.CharField(_("Nomi"), max_length=60)
     sort_order = models.PositiveIntegerField(_("Tartib"), default=100)
+    supports_offcuts = models.BooleanField(_("O'lcham va qoldiq yuritiladi"), default=False)
+    default_roles = models.JSONField(_("Standart kasblar"), default=list, blank=True)
+    is_active = models.BooleanField(_("Faol"), default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -86,29 +99,57 @@ class Category(models.Model):
 
 
 # Per-process category cache, cached thread-safely via django.core.cache.
-CATEGORY_CACHE_KEY = "wms:category_choices"
+CATEGORY_CACHE_KEY = "wms:category_meta"
 
 
 def clear_category_cache(*args, **kwargs) -> None:
     cache.delete(CATEGORY_CACHE_KEY)
 
 
+post_save.connect(clear_category_cache, sender=Category)
+post_delete.connect(clear_category_cache, sender=Category)
+
+
 def localized_category_name(name: str) -> str:
-    """The four built-in category names are translated; names admins typed are shown as typed."""
+    """Built-in category names are translated; names admins typed are shown as typed."""
     return pgettext("category", name) if name else name
 
 
-def category_choices() -> list[tuple[str, str]]:
+def _category_rows() -> list[dict]:
+    rows = cache.get(CATEGORY_CACHE_KEY)
+    if rows is None:
+        rows = list(Category.objects.values("code", "name", "supports_offcuts", "default_roles", "is_active"))
+        cache.set(CATEGORY_CACHE_KEY, rows, timeout=300)
+    return rows
+
+
+def category_choices(*, include_inactive: bool = True, include_code: str = "") -> list[tuple[str, str]]:
     """Categories as (code, name) pairs in the current language. Usable as a form ``choices`` callable."""
-    raw = cache.get(CATEGORY_CACHE_KEY)
-    if raw is None:
-        raw = list(Category.objects.values_list("code", "name"))
-        cache.set(CATEGORY_CACHE_KEY, raw, timeout=300)
-    return [(code, localized_category_name(name)) for code, name in raw]
+    return [
+        (row["code"], localized_category_name(row["name"]))
+        for row in _category_rows()
+        if include_inactive or row["is_active"] or (include_code and row["code"] == include_code)
+    ]
+
+
+def active_category_choices(include_code: str = "") -> list[tuple[str, str]]:
+    return category_choices(include_inactive=False, include_code=include_code)
 
 
 def category_codes() -> list[str]:
-    return [code for code, _ in category_choices()]
+    return [row["code"] for row in _category_rows()]
+
+
+def offcut_category_codes() -> set[str]:
+    db_codes = {row["code"] for row in _category_rows() if row["supports_offcuts"]}
+    return db_codes | OFFCUT_CATEGORIES
+
+
+def default_roles_for_category(category: str) -> list[str]:
+    for row in _category_rows():
+        if row["code"] == category and row["default_roles"]:
+            return [str(role) for role in row["default_roles"]]
+    return [str(role) for role in DEFAULT_CATEGORY_ROLES.get(category, [])]
 
 
 def category_label(code: str) -> str:
@@ -205,7 +246,7 @@ class BaseMaterial(models.Model):
 
     @property
     def supports_offcuts(self) -> bool:
-        return self.category in OFFCUT_CATEGORIES
+        return self.category in offcut_category_codes()
 
     @property
     def allowed_role_labels(self) -> list[str]:
@@ -419,3 +460,57 @@ class InventoryTransaction(models.Model):
     @property
     def quantity_abs(self) -> Decimal:
         return abs(self.quantity_changed)
+
+
+# ---------------------------------------------------------------------------
+# Extra operating expenses (TZ 2.3: nalog, produkta, stanok, etc.)
+# ---------------------------------------------------------------------------
+class ExpenseCategory(models.TextChoices):
+    NALOG = "NALOG", pgettext_lazy("expense_category", "Nalog")
+    PRODUKTA = "PRODUKTA", pgettext_lazy("expense_category", "Produkta")
+    STANOK = "STANOK", pgettext_lazy("expense_category", "Stanok")
+    OTHER = "OTHER", pgettext_lazy("expense_category", "Boshqa")
+
+
+def expense_category_choices() -> list[tuple[str, str]]:
+    return [(choice.value, str(choice.label)) for choice in ExpenseCategory]
+
+
+def expense_category_label(value: str) -> str:
+    try:
+        return str(ExpenseCategory(value).label)
+    except ValueError:
+        return value
+
+
+class OperatingExpense(models.Model):
+    """Additional factory/operating expense (nalog, produkta, stanok, etc.)."""
+
+    category = models.CharField(_("Turi"), max_length=30, choices=ExpenseCategory.choices)
+    title = models.CharField(_("Xarajat nomi"), max_length=200)
+    amount_usd = models.DecimalField(
+        _("Summa (USD $)"),
+        max_digits=14,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal("0.01"))],
+    )
+    expense_date = models.DateField(_("Sana"), default=timezone.localdate, db_index=True)
+    notes = models.TextField(_("Izoh"), blank=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="operating_expenses"
+    )
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ["-expense_date", "-created_at", "-id"]
+        verbose_name = _("qo'shimcha xarajat")
+        verbose_name_plural = _("qo'shimcha xarajatlar")
+        indexes = [
+            models.Index(fields=["expense_date", "category"]),
+        ]
+        constraints = [
+            models.CheckConstraint(condition=models.Q(amount_usd__gt=0), name="expense_amount_positive"),
+        ]
+
+    def __str__(self) -> str:
+        return f"{expense_category_label(self.category)} · {self.title} · ${self.amount_usd}"

@@ -2,12 +2,24 @@
 {% load wms i18n %}
 {% block title %}{% if material %}{{ material.name }}{% else %}{% translate "Yangi material" %}{% endif %}{% endblock %}
 {% block content %}
+{{ offcut_categories|json_script:"offcut-categories" }}
 <a href="{% url 'inventory:material_list' %}" class="inline-flex items-center gap-1.5 text-muted hover:text-ink">{% icon "back" %} {% translate "Materiallar" %}</a>
 <h1 class="mt-3 font-bold text-[24px] leading-8 lg:text-[32px] lg:leading-10">{% if material %}{{ material.name }}{% else %}{% translate "Yangi material" %}{% endif %}</h1>
 <p class="mt-1 text-muted" style="font-size:15px">{% if material %}{% blocktranslate with price=material.unit_price_usd|usd:4 unit=material.unit_short %}Narx kirim orqali o'rtacha hisoblanadi: hozir {{ price }} / {{ unit }}{% endblocktranslate %}{% else %}{% translate "Kartani yarating, keyin kirim bilan miqdor va narxni kiriting." %}{% endif %}</p>
 
 <form method="post" class="mt-6 grid max-w-[920px] gap-6" novalidate
-      x-data="{ category: '{{ form.category.value|default_if_none:''|escapejs }}' }">
+      x-data="{
+        category: '{{ form.category.value|default_if_none:''|escapejs }}',
+        offcutCats: JSON.parse(document.getElementById('offcut-categories').textContent || '[]'),
+        newSupportsOffcuts: {% if form.new_category_supports_offcuts.value %}true{% else %}false{% endif %},
+        hasSavedDims: {% if form.length_mm.value %}true{% else %}false{% endif %},
+        dimUnit: '{{ form.dim_unit.value|default_if_none:'mm'|escapejs }}',
+        get showDims() {
+          return this.offcutCats.includes(this.category)
+            || (this.category === '__other__' && this.newSupportsOffcuts)
+            || this.hasSavedDims;
+        }
+      }">
   {% csrf_token %}
   {% include "partials/form_errors.html" %}
 
@@ -25,11 +37,20 @@
         </div>
         {% include "partials/field.html" with field=form.unit_of_measure %}
       </div>
-      <div x-show="category === '__other__'" {% if form.category.value != "__other__" %}x-cloak{% endif %} class="{% if form.new_category.errors %}has-error{% endif %}">
-        <label class="field-label" for="{{ form.new_category.id_for_label }}">{{ form.new_category.label }}</label>
-        {{ form.new_category }}
-        <p class="field-help">{% translate "Yangi kategoriya saqlanadi va keyingi safar ro'yxatda chiqadi. Unga kasblarni pastda belgilang." %}</p>
-        {% for e in form.new_category.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+      <div x-show="category === '__other__'" {% if form.category.value != "__other__" %}x-cloak{% endif %} class="rounded-lg border border-line bg-raised/40 p-4 form-stack {% if form.new_category.errors %}has-error{% endif %}">
+        <div>
+          <label class="field-label" for="{{ form.new_category.id_for_label }}">{{ form.new_category.label }}</label>
+          {{ form.new_category }}
+          <p class="field-help">{% translate "Yangi kategoriya saqlanadi va keyingi safar ro'yxatda chiqadi. Unga kasblarni pastda belgilang." %}</p>
+          {% for e in form.new_category.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+        </div>
+        <label class="flex items-start gap-2.5 cursor-pointer text-sm">
+          <input type="checkbox" name="{{ form.new_category_supports_offcuts.html_name }}" id="{{ form.new_category_supports_offcuts.id_for_label }}" x-model="newSupportsOffcuts" class="mt-0.5 h-4 w-4 rounded border-control text-ink">
+          <span>
+            <span class="font-medium text-ink block">{{ form.new_category_supports_offcuts.label }}</span>
+            <span class="text-xs text-muted">{{ form.new_category_supports_offcuts.help_text }}</span>
+          </span>
+        </label>
       </div>
     </div>
   </section>
@@ -46,9 +67,32 @@
         {% include "partials/field.html" with field=form.minimum_threshold %}
         {% include "partials/field.html" with field=form.container_size %}
       </div>
-      <div class="grid gap-4 sm:grid-cols-2" x-show="category === 'SHEET' || category === 'LINEAR' || {% if form.length_mm.value %}true{% else %}false{% endif %}">
-        {% include "partials/field.html" with field=form.length_mm %}
-        {% include "partials/field.html" with field=form.width_mm %}
+      <div class="space-y-3" x-show="showDims" x-cloak>
+        <div class="flex items-center justify-between gap-2 pt-1 border-t border-rule">
+          <span class="text-xs font-medium text-muted">{% translate "O'lcham birligi" %}</span>
+          <div class="inline-flex rounded border border-control p-0.5 bg-surface shadow-2xs">
+            <label class="cursor-pointer px-2.5 py-0.5 text-xs rounded transition-colors" :class="dimUnit === 'mm' ? 'bg-ink text-white font-semibold' : 'text-muted hover:text-ink'">
+              <input type="radio" name="{{ form.dim_unit.html_name }}" value="mm" x-model="dimUnit" class="sr-only"> mm
+            </label>
+            <label class="cursor-pointer px-2.5 py-0.5 text-xs rounded transition-colors" :class="dimUnit === 'sm' ? 'bg-ink text-white font-semibold' : 'text-muted hover:text-ink'">
+              <input type="radio" name="{{ form.dim_unit.html_name }}" value="sm" x-model="dimUnit" class="sr-only"> sm
+            </label>
+          </div>
+        </div>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div class="{% if form.length_mm.errors %}has-error{% endif %}">
+            <label class="field-label" for="{{ form.length_mm.id_for_label }}">{{ form.length_mm.label }} (<span x-text="dimUnit"></span>)</label>
+            <input type="number" name="{{ form.length_mm.html_name }}" id="{{ form.length_mm.id_for_label }}" min="1" max="100000" inputmode="numeric" value="{{ form.length_mm.value|default_if_none:'' }}" :placeholder="dimUnit === 'sm' ? '275' : '2750'">
+            <p class="field-help">{{ form.length_mm.help_text }}</p>
+            {% for e in form.length_mm.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+          </div>
+          <div class="{% if form.width_mm.errors %}has-error{% endif %}">
+            <label class="field-label" for="{{ form.width_mm.id_for_label }}">{{ form.width_mm.label }} (<span x-text="dimUnit"></span>)</label>
+            <input type="number" name="{{ form.width_mm.html_name }}" id="{{ form.width_mm.id_for_label }}" min="1" max="100000" inputmode="numeric" value="{{ form.width_mm.value|default_if_none:'' }}" :placeholder="dimUnit === 'sm' ? '183' : '1830'">
+            <p class="field-help">{{ form.width_mm.help_text }}</p>
+            {% for e in form.width_mm.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+          </div>
+        </div>
       </div>
     </div>
   </section>

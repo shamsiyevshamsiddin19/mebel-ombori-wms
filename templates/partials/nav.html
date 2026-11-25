@@ -58,6 +58,16 @@
   </li>
   <li>
     <a class="nav-item relative"
+       href="{% url 'inventory:expenses' %}"
+       title="{% translate "Xarajatlar" %}"
+       :class="{ 'lg:justify-center lg:!px-0 lg:w-10 lg:h-10 lg:mx-auto': collapsed }"
+       {% if nav_section == "expenses" %}aria-current="page"{% endif %}>
+      {% icon "wallet" 18 "flex-none" %}
+      <span class="truncate" :class="{ 'lg:hidden': collapsed }">{% translate "Xarajatlar" %}</span>
+    </a>
+  </li>
+  <li>
+    <a class="nav-item relative"
        href="{% url 'inventory:reports' %}"
        title="{% translate "Oylik hisobot" %}"
        :class="{ 'lg:justify-center lg:!px-0 lg:w-10 lg:h-10 lg:mx-auto': collapsed }"

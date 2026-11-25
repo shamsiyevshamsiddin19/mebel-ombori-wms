@@ -16,6 +16,8 @@ urlpatterns = [
     path("admin-dashboard/materials/new/", views.MaterialCreateView.as_view(), name="material_create"),
     path("admin-dashboard/materials/<int:pk>/edit/", views.MaterialUpdateView.as_view(), name="material_edit"),
     path("admin-dashboard/kirim/", views.KirimView.as_view(), name="kirim"),
+    path("admin-dashboard/expenses/", views.ExpenseListCreateView.as_view(), name="expenses"),
+    path("admin-dashboard/expenses/export.csv", views.ExpenseExportView.as_view(), name="expenses_export"),
     path("admin-dashboard/reports/", views.ReportView.as_view(), name="reports"),
     path("admin-dashboard/reports/export.csv", views.ReportExportView.as_view(), name="reports_export"),
 ]

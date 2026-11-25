@@ -223,7 +223,7 @@ class KirimViewTests(WorkshopTestCase):
     def test_new_material_goes_straight_to_kirim(self):
         response = self.client.post(
             reverse("inventory:material_create"),
-            {"name": "Fanera 12 mm", "category": MaterialCategory.SHEET, "unit_of_measure": MeasurementUnit.PIECE,
+            {"name": "Fanera 12 mm", "category": "FANER", "unit_of_measure": MeasurementUnit.PIECE,
              "minimum_threshold": "6", "length_mm": "2440", "width_mm": "1220"},
         )
         material = BaseMaterial.objects.get(name="Fanera 12 mm")
@@ -239,7 +239,7 @@ class KirimViewTests(WorkshopTestCase):
         self.assertRegex(html, r'name="container_size"[^>]*min="1"')
 
         response = self.client.post(url, {
-            "name": "Lak X", "category": MaterialCategory.LIQUID, "unit_of_measure": MeasurementUnit.LITER,
+            "name": "Lak X", "category": "KRASKA", "unit_of_measure": MeasurementUnit.LITER,
             "minimum_threshold": "-3", "container_size": "-12",
         })
         self.assertEqual(response.status_code, 200)
