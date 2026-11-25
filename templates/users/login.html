@@ -5,7 +5,7 @@
 <div class="panel p-6 sm:p-8">
   <h1 class="font-bold" style="font-size:24px;line-height:32px">{% translate "Tizimga kirish" %}</h1>
   <p class="mt-1 text-muted">{% translate "Sex omboriga telefon raqami va parolingiz bilan kiring." %}</p>
-  <form method="post" class="form-stack mt-6" novalidate>
+  <form method="post" class="form-stack mt-6" data-allow-autofill="true" novalidate>
     {% csrf_token %}
     {% include "partials/form_errors.html" %}
     {% include "partials/field.html" with field=form.username %}

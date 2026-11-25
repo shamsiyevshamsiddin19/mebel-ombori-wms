@@ -359,6 +359,73 @@
       }
     });
   })();
+
+  // Prevent browser address-book ("Manage addresses...") and autocomplete history popups on all inputs.
+  (function () {
+    var seq = 0;
+    var TEXT_LIKE = { text: 1, search: 1, number: 1, tel: 1, email: 1, url: 1 };
+    var DATE_LIKE = { date: 1, month: 1, time: 1 };
+
+    function scrubElement(el, renameFields) {
+      if (!el || el.dataset.wmsAfDone) return;
+      var tag = el.tagName;
+      if (tag !== 'INPUT' && tag !== 'TEXTAREA') return;
+      var type = (el.getAttribute('type') || 'text').toLowerCase();
+      if (!TEXT_LIKE[type] && !DATE_LIKE[type] && tag !== 'TEXTAREA') return;
+
+      el.dataset.wmsAfDone = '1';
+      el.setAttribute('autocomplete', TEXT_LIKE[type] || tag === 'TEXTAREA' ? 'one-time-code' : 'off');
+      el.setAttribute('autocorrect', 'off');
+      el.setAttribute('autocapitalize', 'off');
+      el.setAttribute('spellcheck', 'false');
+      el.setAttribute('aria-autocomplete', 'none');
+      el.setAttribute('data-lpignore', 'true');
+      el.setAttribute('data-1p-ignore', 'true');
+      el.setAttribute('data-bwignore', 'true');
+      el.setAttribute('data-form-type', 'other');
+
+      if (renameFields && el.name && !el.hasAttribute(':name') && !el.hasAttribute('x-bind:name')) {
+        seq += 1;
+        el.dataset.wmsField = el.name;
+        el.name = '_wms_f_' + seq + '_' + Math.random().toString(36).slice(2, 6);
+        if (el.id) {
+          var oldId = el.id;
+          var newId = 'wms_id_' + seq;
+          el.id = newId;
+          var esc = window.CSS && CSS.escape ? CSS.escape(oldId) : oldId;
+          document.querySelectorAll('label[for="' + esc + '"]').forEach(function (lbl) {
+            lbl.setAttribute('for', newId);
+          });
+        }
+      }
+    }
+
+    document.querySelectorAll('form').forEach(function (form) {
+      if (form.hasAttribute('data-allow-autofill')) return;
+      form.setAttribute('autocomplete', 'off');
+      var isPost = (form.getAttribute('method') || 'get').toLowerCase() === 'post';
+      var action = form.getAttribute('action') || '';
+      var cleanAction = (action.slice(-1) === '/' ? action.slice(0, -1) : action).toLowerCase();
+      var isUtilityPost = cleanAction.endsWith('/login') || cleanAction.endsWith('/logout') || cleanAction.endsWith('/setlang');
+      var renameFields = isPost && !isUtilityPost;
+
+      form.querySelectorAll('input, textarea').forEach(function (el) {
+        scrubElement(el, renameFields);
+      });
+
+      if (renameFields) {
+        form.addEventListener('formdata', function (e) {
+          form.querySelectorAll('[data-wms-field]').forEach(function (el) {
+            var orig = el.dataset.wmsField;
+            e.formData.delete(el.name);
+            if (!el.disabled && orig) {
+              e.formData.append(orig, el.value);
+            }
+          });
+        });
+      }
+    });
+  })();
 </script>
 </body>
 </html>

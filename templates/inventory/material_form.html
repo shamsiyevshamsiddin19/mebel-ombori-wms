@@ -123,7 +123,7 @@
      @scroll.window="if (rolesOpen) rolesOpen = false;"
      @keydown.escape.window="rolesOpen = false">
 
-  <form method="post" novalidate>
+  <form method="post" autocomplete="off" novalidate>
     {% csrf_token %}
     {% include "partials/form_errors.html" %}
 
@@ -154,6 +154,7 @@
                        name="{{ form.name.html_name }}"
                        id="{{ form.name.id_for_label }}"
                        value="{{ form.name.value|default_if_none:'' }}"
+                       autocomplete="one-time-code"
                        :disabled="!isDesktop"
                        class="control !h-9 text-xs sm:text-sm w-full"
                        placeholder="LMDF 18 mm oq"

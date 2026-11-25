@@ -43,7 +43,7 @@
 {# Add Expense Form #}
 <section class="panel mt-6 p-5 shadow-xs" aria-labelledby="new-expense-title">
   <h2 id="new-expense-title" class="panel-title mb-4">{% translate "Yangi xarajat qo'shish" %}</h2>
-  <form method="post" novalidate class="grid gap-3 md:grid-cols-[160px_minmax(0,1.4fr)_140px_150px_minmax(0,1fr)_auto] md:items-end">
+  <form method="post" autocomplete="off" novalidate class="grid gap-3 md:grid-cols-[160px_minmax(0,1.4fr)_140px_150px_minmax(0,1fr)_auto] md:items-end">
     {% csrf_token %}
     {% include "partials/form_errors.html" %}
     <div class="{% if form.category.errors %}has-error{% endif %}">

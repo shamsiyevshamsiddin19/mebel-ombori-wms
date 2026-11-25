@@ -52,7 +52,7 @@
      }"
      @resize.window="isDesktop = window.innerWidth >= 768">
 
-  <form method="post" novalidate>
+  <form method="post" autocomplete="off" novalidate>
     {% csrf_token %}
     {% include "partials/form_errors.html" %}
 
