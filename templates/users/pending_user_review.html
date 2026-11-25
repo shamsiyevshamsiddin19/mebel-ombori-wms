@@ -6,7 +6,7 @@
 <h1 class="mt-3 font-bold text-[24px] leading-8 lg:text-[32px] lg:leading-10">{{ candidate.display_name }}</h1>
 <p class="mt-1 text-muted" style="font-size:15px">@{{ candidate.username }} · {% blocktranslate with date=candidate.date_joined|date:"Y-m-d H:i" %}{{ date }} da so'rov yuborgan{% endblocktranslate %}</p>
 
-<div class="mt-6 grid max-w-[920px] items-start gap-6 md:grid-cols-[minmax(0,1fr)_280px]">
+<div class="mt-6 grid items-start gap-6 md:grid-cols-[minmax(0,1fr)_340px]">
   <form method="post" class="panel form-stack p-5 sm:p-6" novalidate>
     {% csrf_token %}
     {% include "partials/form_errors.html" %}
